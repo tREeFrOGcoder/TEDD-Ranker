@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Minimalism Leaderboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Minimalism Leaderboard</h1>
+
+  <!-- === Efficiency Table === -->
+  <h2>Efficiency Indicators</h2>
+  <div class="table-container">
+    <table id="efficiencyTable" class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Performance Improvement Ratio (PIR)</th>
+          <th>Selected Dataset Fraction (SDF)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Table rows will be populated by JavaScript -->
+      </tbody>
+      <tfoot>
+        <!-- User input row for Efficiency table -->
+        <tr>
+          <td>
+            <input
+              type="text"
+              id="newEfficiencyMethod"
+              placeholder="Enter Method Name"
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              step="0.01"
+              id="newEfficiencyPIR"
+              placeholder="Enter PIR"
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              step="0.001"
+              id="newEfficiencySDF"
+              placeholder="Enter SDF"
+            />
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- === Feasibility Table === -->
+  <h2>Feasibility Indicators</h2>
+  <div class="table-container">
+    <table id="feasibilityTable" class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th># LLM Trained</th>
+          <th># Algorithm Steps</th>
+          <th>Open-Sourced?</th>
+          <th>Model-Free?</th>
+          <th>Dataset-Free?</th>
+          <th>ChatGPT-Free?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Table rows will be populated by JavaScript -->
+      </tbody>
+      <tfoot>
+        <!-- User input row for Feasibility table -->
+        <tr>
+          <td>
+            <input
+              type="text"
+              id="newFeasibilityMethod"
+              placeholder="Enter Method Name"
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              step="1"
+              id="newFeasibilityLLM"
+              placeholder="LLM Count"
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              step="1"
+              id="newFeasibilitySteps"
+              placeholder="Algorithm Steps"
+            />
+          </td>
+          <td>
+            <select id="newFeasibilityOpenSource">
+              <option value="true">Yes (✔)</option>
+              <option value="false">No (✘)</option>
+            </select>
+          </td>
+          <td>
+            <select id="newFeasibilityModelFree">
+              <option value="true">Yes (✔)</option>
+              <option value="false">No (✘)</option>
+            </select>
+          </td>
+          <td>
+            <select id="newFeasibilityDatasetFree">
+              <option value="true">Yes (✔)</option>
+              <option value="false">No (✘)</option>
+            </select>
+          </td>
+          <td>
+            <select id="newFeasibilityChatGPTFree">
+              <option value="true">Yes (✔)</option>
+              <option value="false">No (✘)</option>
+            </select>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Buttons for updating and saving -->
+  <div class="button-container">
+    <button id="updateBtn">Update</button>
+    <button id="saveBtn">Save Data &amp; Plots</button>
+  </div>
+
+  <!-- Efficiency Plot -->
+  <h2>Efficiency Rank Plot</h2>
+  <div class="plot-container">
+    <canvas id="efficiencyCanvas" width="600" height="400"></canvas>
+  </div>
+
+  <!-- Feasibility Plot -->
+  <h2>Feasibility Rank Plot</h2>
+  <div class="plot-container">
+    <canvas id="feasibilityCanvas" width="600" height="400"></canvas>
+  </div>
+
+  <!-- === Script Section === -->
+  <script>
+    // ====================
+    // Sample data (existing works)
+    // ====================
+    const efficiencyData = [
+      {
+        method: "Instruction-Mining",
+        pir: 2.0,
+        sdf: 0.005,
+      },
+      {
+        method: "InstructionGPT-4",
+        pir: 3.5,
+        sdf: 0.030,
+      },
+      {
+        method: "MethodA",
+        pir: 1.8,
+        sdf: 0.010,
+      },
+      {
+        method: "MethodB",
+        pir: 2.8,
+        sdf: 0.025,
+      },
+    ];
+
+    const feasibilityData = [
+      {
+        method: "Instruction-Mining",
+        llmCount: 1,
+        steps: 10,
+        openSource: true,
+        modelFree: true,
+        datasetFree: false,
+        chatGPTFree: false
+      },
+      {
+        method: "InstructionGPT-4",
+        llmCount: 1,
+        steps: 8,
+        openSource: false,
+        modelFree: false,
+        datasetFree: false,
+        chatGPTFree: false
+      },
+      {
+        method: "MethodA",
+        llmCount: 2,
+        steps: 15,
+        openSource: true,
+        modelFree: true,
+        datasetFree: true,
+        chatGPTFree: true
+      },
+      {
+        method: "MethodB",
+        llmCount: 1,
+        steps: 20,
+        openSource: false,
+        modelFree: false,
+        datasetFree: true,
+        chatGPTFree: true
+      },
+    ];
+
+    // ====================
+    // Populate Tables
+    // ====================
+    function populateTables() {
+      // Efficiency Table
+      const efficiencyTableBody = document.querySelector("#efficiencyTable tbody");
+      efficiencyTableBody.innerHTML = ""; // Clear existing rows
+      efficiencyData.forEach((row) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.method}</td>
+          <td>${row.pir}</td>
+          <td>${row.sdf}</td>
+        `;
+        efficiencyTableBody.appendChild(tr);
+      });
+
+      // Feasibility Table
+      const feasibilityTableBody = document.querySelector("#feasibilityTable tbody");
+      feasibilityTableBody.innerHTML = ""; // Clear existing rows
+      feasibilityData.forEach((row) => {
+        const openSrcDisplay = row.openSource ? "✔" : "✘";
+        const modelFreeDisplay = row.modelFree ? "✔" : "✘";
+        const datasetFreeDisplay = row.datasetFree ? "✔" : "✘";
+        const chatGPTFreeDisplay = row.chatGPTFree ? "✔" : "✘";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.method}</td>
+          <td>${row.llmCount}</td>
+          <td>${row.steps}</td>
+          <td>${openSrcDisplay}</td>
+          <td>${modelFreeDisplay}</td>
+          <td>${datasetFreeDisplay}</td>
+          <td>${chatGPTFreeDisplay}</td>
+        `;
+        feasibilityTableBody.appendChild(tr);
+      });
+    }
+
+    // ====================
+    // Add new row from user input
+    // ====================
+    function addNewRows() {
+      // Efficiency
+      const method = document.getElementById("newEfficiencyMethod").value.trim();
+      const pirValue = parseFloat(document.getElementById("newEfficiencyPIR").value);
+      const sdfValue = parseFloat(document.getElementById("newEfficiencySDF").value);
+
+      if (method && !isNaN(pirValue) && !isNaN(sdfValue)) {
+        efficiencyData.push({
+          method: method,
+          pir: pirValue,
+          sdf: sdfValue
+        });
+      }
+
+      // Feasibility
+      const feasibilityMethod = document.getElementById("newFeasibilityMethod").value.trim();
+      const llmCount = parseInt(document.getElementById("newFeasibilityLLM").value);
+      const steps = parseInt(document.getElementById("newFeasibilitySteps").value);
+      const openSource = document.getElementById("newFeasibilityOpenSource").value === "true";
+      const modelFree = document.getElementById("newFeasibilityModelFree").value === "true";
+      const datasetFree = document.getElementById("newFeasibilityDatasetFree").value === "true";
+      const chatGPTFree = document.getElementById("newFeasibilityChatGPTFree").value === "true";
+
+      if (feasibilityMethod && !isNaN(llmCount) && !isNaN(steps)) {
+        feasibilityData.push({
+          method: feasibilityMethod,
+          llmCount: llmCount,
+          steps: steps,
+          openSource: openSource,
+          modelFree: modelFree,
+          datasetFree: datasetFree,
+          chatGPTFree: chatGPTFree
+        });
+      }
+
+      // Re-populate tables
+      populateTables();
+    }
+
+    // ====================
+    // Draw Efficiency Plot
+    // ====================
+    function drawEfficiencyPlot() {
+      const canvas = document.getElementById("efficiencyCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Canvas and axis setup
+      const padding = 50;
+      const width = canvas.width;
+      const height = canvas.height;
+      // Prepare data range
+      const maxSDF = Math.max(...efficiencyData.map(d => d.sdf));
+      const minSDF = 0;
+      const maxPIR = Math.max(...efficiencyData.map(d => d.pir));
+      const minPIR = 1.1; // for aesthetic as asked
+
+      // Transform function
+      function xScale(val) {
+        return (
+          padding +
+          ((val - minSDF) / (maxSDF - minSDF)) * (width - 2 * padding)
+        );
+      }
+      function yScale(val) {
+        // y decreases as we go down, so we invert
+        return (
+          height -
+          padding -
+          ((val - minPIR) / (maxPIR - minPIR)) * (height - 2 * padding)
+        );
+      }
+
+      // Draw axes
+      ctx.beginPath();
+      ctx.moveTo(padding, height - padding);
+      ctx.lineTo(width - padding, height - padding); // x-axis
+      ctx.moveTo(padding, height - padding);
+      ctx.lineTo(padding, padding); // y-axis
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // X-axis label
+      ctx.fillStyle = "#000";
+      ctx.font = "14px Arial";
+      ctx.fillText("Selected Dataset Fraction", width / 2 - 50, height - 10);
+      // Y-axis label
+      ctx.save();
+      ctx.translate(15, height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.fillText("Performance Improvement Ratio", 0, 0);
+      ctx.restore();
+
+      // Identify the two works that define the baseline line
+      const baselinePoints = efficiencyData.filter(d =>
+        d.method === "Instruction-Mining" || d.method === "InstructionGPT-4"
+      );
+      if (baselinePoints.length < 2) {
+        // If we don't find both, just skip drawing baseline
+        // (But in real usage, ensure these exist).
+        return;
+      }
+      // Assume exactly 2 baseline points found
+      const [p1, p2] = baselinePoints;
+
+      // Sort them by SDF (to draw line properly from left to right)
+      let b1 = p1.sdf < p2.sdf ? p1 : p2;
+      let b2 = b1 === p1 ? p2 : p1;
+
+      // Coordinates
+      const x1 = xScale(b1.sdf), y1 = yScale(b1.pir);
+      const x2 = xScale(b2.sdf), y2 = yScale(b2.pir);
+
+      // Fill area above baseline with palegreen and below with lightcoral
+      // We'll create two large polygons and do some "exclusive-or" or simpler approach.
+      // For a minimal approach, we can do a single trapezoid or triangle approach,
+      // but let's do a simpler approach: just paint everything above with palegreen,
+      // then paint everything below with lightcoral, then draw the line.
+      // Alternatively, we can do a "clipping" approach. For simplicity:
+      // 1) draw palegreen rectangle covering the entire chart
+      // 2) "erase" or fill with lightcoral below the line
+      // This approach can be refined. We'll do a naive approach to illustrate.
+
+      // 1) Fill entire chart area with palegreen
+      ctx.save();
+      ctx.fillStyle = "palegreen";
+      ctx.fillRect(padding, padding, width - 2 * padding, height - 2 * padding);
+      ctx.restore();
+
+      // 2) We'll create a path from the baseline line down to the x-axis
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.lineTo(x2, height - padding);
+      ctx.lineTo(x1, height - padding);
+      ctx.closePath();
+      ctx.fillStyle = "lightcoral";
+      ctx.fill();
+      ctx.restore();
+
+      // Now draw the thick orange dashed baseline
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "orange";
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.restore();
+
+      // Function to get the Y on baseline line for a given X
+      const slope = (y2 - y1) / (x2 - x1);
+      function baselineY(x) {
+        // line eqn: y - y1 = slope * (x - x1)
+        return y1 + slope * (x - x1);
+      }
+
+      // Draw each data point and the projection line
+      efficiencyData.forEach(d => {
+        const px = xScale(d.sdf);
+        const py = yScale(d.pir);
+
+        // Draw the triangular dot
+        ctx.save();
+        ctx.fillStyle = "blue";
+        ctx.beginPath();
+        ctx.moveTo(px, py - 4);
+        ctx.lineTo(px - 4, py + 4);
+        ctx.lineTo(px + 4, py + 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // Project to baseline
+        const by = baselineY(px);
+        // Color depends on above or below baseline
+        let color = "green";
+        if (py > by) {
+          // Point is above baseline => superior => green
+          color = "green";
+        } else {
+          color = "red";
+        }
+        // Dashed projection line
+        ctx.save();
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px, by);
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    // ====================
+    // Draw Feasibility Plot
+    // ====================
+    function drawFeasibilityPlot() {
+      const canvas = document.getElementById("feasibilityCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const padding = 50;
+
+      // For simplicity, we assume ranks from 0..8 on both axes
+      const minRank = 0;
+      const maxRank = 8;
+
+      // We'll define a function to get the "Simplicity rank" and "Flexibility rank"
+      // from the table data. This is up to you how you compute the rank. 
+      // For demonstration, let's do a naive approach:
+      // Simplicity rank = some function of (# LLM trained, # steps, openSource?).
+      // Flexibility rank = (# of booleans that are true among modelFree, datasetFree, chatGPTFree).
+
+      // Example rank function (very arbitrary / for illustration):
+      // Simplicity rank = 8 - (0.5 * (#LLM) + 0.2 * steps + (openSource?2:0)) ... just a toy example
+      // We'll clamp it between 0..8
+      function computeSimplicity(d) {
+        let score = 8 - (0.5 * d.llmCount + 0.2 * d.steps + (d.openSource ? 0 : 1));
+        if (score < 0) score = 0;
+        if (score > 8) score = 8;
+        return score;
+      }
+      // Flexibility rank = # of booleans true among (modelFree, datasetFree, chatGPTFree)
+      // each "true" = +2, for example, so max is 6 => we scale up to 8 for demonstration
+      function computeFlexibility(d) {
+        let count = 0;
+        if (d.modelFree) count++;
+        if (d.datasetFree) count++;
+        if (d.chatGPTFree) count++;
+        // scale to 0..8
+        let score = (count / 3) * 8; // 0, ~2.66, ~5.33, 8
+        if (score < 0) score = 0;
+        if (score > 8) score = 8;
+        return score;
+      }
+
+      // Transform
+      function xScale(val) {
+        return (
+          padding +
+          ((val - minRank) / (maxRank - minRank)) * (width - 2 * padding)
+        );
+      }
+      function yScale(val) {
+        return (
+          height -
+          padding -
+          ((val - minRank) / (maxRank - minRank)) * (height - 2 * padding)
+        );
+      }
+
+      // Draw axes
+      ctx.beginPath();
+      ctx.moveTo(padding, height - padding);
+      ctx.lineTo(width - padding, height - padding); // x-axis
+      ctx.moveTo(padding, height - padding);
+      ctx.lineTo(padding, padding); // y-axis
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // X-axis label
+      ctx.fillStyle = "#000";
+      ctx.font = "14px Arial";
+      ctx.fillText("Simplicity Rank", width / 2 - 40, height - 10);
+      // Y-axis label
+      ctx.save();
+      ctx.translate(15, height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.fillText("Flexibility Rank", 0, 0);
+      ctx.restore();
+
+      // Draw the thick orange diagonal line from (0,0) to (8,8)
+      const x0 = xScale(0), y0 = yScale(0);
+      const x8 = xScale(8), y8 = yScale(8);
+      ctx.save();
+      ctx.beginPath();
+      ctx.strokeStyle = "orange";
+      ctx.lineWidth = 3;
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x8, y8);
+      ctx.stroke();
+      ctx.restore();
+
+      // We'll gather the rank data from each feasibility item
+      const points = feasibilityData.map(d => {
+        return {
+          method: d.method,
+          simplicity: computeSimplicity(d),
+          flexibility: computeFlexibility(d)
+        };
+      });
+
+      // For each point, draw big blue circle
+      // Then draw dashed line to the diagonal
+      // Then the green circle on diagonal with a rank index.
+      // We'll define the "rank index" as the order from the origin along the diagonal
+      // for demonstration. You can refine the logic as needed.
+      function projectPointToDiagonal(px, py) {
+        // Diagonal from (0,0) to (8,8) => slope=1 => line y=x in rank space
+        // We find the projection in rank space, then transform to canvas
+        // In rank space, the diagonal is y=x. The projection of (px, py) onto y=x is
+        // t = (px + py)/2 for an average. So newX=newY=(px+py)/2
+        let t = (px + py) / 2;
+        return { dx: t, dy: t };
+      }
+
+      // We'll keep an incremental "label" for the green circles
+      let diagonalLabelCounter = 1;
+
+      points.forEach(pt => {
+        const cx = xScale(pt.simplicity);
+        const cy = yScale(pt.flexibility);
+
+        // Draw big blue circle
+        ctx.save();
+        ctx.beginPath();
+        ctx.fillStyle = "blue";
+        ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+
+        // Project to diagonal
+        const diagP = projectPointToDiagonal(pt.simplicity, pt.flexibility);
+        const dxCanvas = xScale(diagP.dx);
+        const dyCanvas = yScale(diagP.dy);
+
+        // Dashed projection line
+        ctx.save();
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(dxCanvas, dyCanvas);
+        ctx.strokeStyle = "#777";
+        ctx.stroke();
+        ctx.restore();
+
+        // Green circle on diagonal
+        ctx.save();
+        ctx.beginPath();
+        ctx.fillStyle = "green";
+        ctx.arc(dxCanvas, dyCanvas, 4, 0, 2 * Math.PI);
+        ctx.fill();
+        // Label (the rank index)
+        ctx.fillStyle = "#000";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(diagonalLabelCounter, dxCanvas, dyCanvas - 12);
+        ctx.restore();
+
+        diagonalLabelCounter++;
+      });
+    }
+
+    // ====================
+    // Master update function
+    // ====================
+    function updateAll() {
+      addNewRows();
+      drawEfficiencyPlot();
+      drawFeasibilityPlot();
+    }
+
+    // ====================
+    // Save data & plots locally
+    // ====================
+    function saveDataAndPlots() {
+      // 1) Save the data from both tables as JSON
+      const dataObj = {
+        efficiencyData,
+        feasibilityData
+      };
+      const dataStr = JSON.stringify(dataObj, null, 2);
+      const dataBlob = new Blob([dataStr], { type: "application/json" });
+      const dataUrl = URL.createObjectURL(dataBlob);
+
+      const dataLink = document.createElement("a");
+      dataLink.href = dataUrl;
+      dataLink.download = "leaderboard_data.json";
+      dataLink.click();
+      URL.revokeObjectURL(dataUrl);
+
+      // 2) Save the plots as PNG
+      function downloadCanvas(canvasId, filename) {
+        const canvas = document.getElementById(canvasId);
+        const link = document.createElement("a");
+        link.download = filename;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+
+      downloadCanvas("efficiencyCanvas", "efficiency_plot.png");
+      downloadCanvas("feasibilityCanvas", "feasibility_plot.png");
+    }
+
+    // ====================
+    // Init
+    // ====================
+    window.onload = () => {
+      populateTables();
+      drawEfficiencyPlot();
+      drawFeasibilityPlot();
+
+      document.getElementById("updateBtn").addEventListener("click", updateAll);
+      document.getElementById("saveBtn").addEventListener("click", saveDataAndPlots);
+    };
+  </script>
+</body>
+</html>

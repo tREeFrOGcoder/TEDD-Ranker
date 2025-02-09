@@ -1,0 +1,65 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f9f9f9;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  h2 {
+    margin-top: 40px;
+    margin-bottom: 10px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    margin-bottom: 20px;
+  }
+  
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    background: #fff;
+  }
+  
+  .leaderboard-table thead {
+    background: #eee;
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  
+  .leaderboard-table input,
+  .leaderboard-table select {
+    width: 95%;
+    box-sizing: border-box;
+  }
+  
+  .button-container {
+    margin: 20px 0;
+    text-align: center;
+  }
+  
+  .button-container button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  
+  .plot-container {
+    text-align: center;
+    margin: 20px 0;
+    background: #fff;
+    display: inline-block;
+    padding: 15px;
+    border: 1px solid #ccc;
+  }
+  
