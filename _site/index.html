@@ -4,88 +4,134 @@
   <meta charset="UTF-8" />
   <title>Minimalism Leaderboard</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* (Any additional inline styles can go here if needed) */
+  </style>
 </head>
 <body>
   <h1>Minimalism Leaderboard</h1>
 
-  <!-- ===== Efficiency Table ===== -->
-  <h2>Efficiency Indicators</h2>
-  <div class="table-container">
-    <table id="efficiencyTable" class="leaderboard-table">
-      <thead>
-        <tr>
-          <th>Method</th>
-          <th>Selected Dataset Fraction (SDF)</th>
-          <th>Performance Improvement Ratio (PIR)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <!-- Row for user input -->
-        <tr>
-          <td><input type="text" id="newEfficiencyMethod" placeholder="Method Name" /></td>
-          <td><input type="number" step="0.0001" id="newEfficiencySDF" placeholder="SDF" /></td>
-          <td><input type="number" step="0.001" id="newEfficiencyPIR" placeholder="PIR" /></td>
-        </tr>
-      </tfoot>
-    </table>
+  <!-- ===== Efficiency Section ===== -->
+  <div class="section-container" id="efficiencySection">
+    <h2>Efficiency Indicators</h2>
+    <!-- Efficiency Input Fields (moved above the table) -->
+    <div class="input-container">
+      <div>
+        <label for="effMethodNames">Method Names (optional, comma separated):</label>
+        <input type="text" id="effMethodNames" placeholder="e.g. Model1,Model2,Model3" />
+      </div>
+      <div>
+        <label for="pirType">PIR Type:</label>
+        <select id="pirType">
+          <option value="same_win_rate">Same Win Rate</option>
+          <option value="same_benchmark">Same Benchmark</option>
+          <option value="other_benchmark">Other Benchmark</option>
+        </select>
+      </div>
+      <div>
+        <label for="SEM">SEM values:</label>
+        <input type="text" id="SEM" placeholder="comma separated, e.g. 1,2,3" />
+      </div>
+      <div>
+        <label for="BM">BM values:</label>
+        <input type="text" id="BM" placeholder="comma separated, e.g. 1,2,3" />
+      </div>
+      <div>
+        <label for="SDF">SDF values:</label>
+        <input type="text" id="SDF" placeholder="comma separated, e.g. 0.1,0.2,0.3" />
+      </div>
+    </div>
+
+    <!-- Efficiency Table & Plot in one row -->
+    <div class="row-container">
+      <div class="half">
+        <div class="table-container">
+          <table id="efficiencyTable" class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Selected Dataset Fraction (SDF)</th>
+                <th>Performance Improvement Ratio (PIR)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="half">
+        <div class="plot-container">
+          <canvas id="efficiencyCanvas" width="700" height="500"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- ===== Feasibility Table ===== -->
-  <h2>Feasibility Indicators</h2>
-  <div class="table-container">
-    <table id="feasibilityTable" class="leaderboard-table">
-      <thead>
-        <tr>
-          <th>Method</th>
-          <th># Trained LLMs</th>
-          <th># Algorithm Steps (Using LLMs)</th>
-          <th>Rep.</th>
-          <th>Simplicity</th>
-          <th>Model Free</th>
-          <th>Dataset Free</th>
-          <th>ChatGPT Free</th>
-          <th>Flexibility</th>
-          <th>Feasibility</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <!-- Row for user input -->
-        <tr>
-          <td><input type="text" id="newFeasMethod" placeholder="Method Name" /></td>
-          <td><input type="text" id="newFeasLLM" placeholder="#LLMs" /></td>
-          <td><input type="text" id="newFeasSteps" placeholder="#Steps(LLMs)" /></td>
-          <td>
-            <select id="newFeasRep">
-              <option value="true">&#10004;</option>
-              <option value="false">&#10007;</option>
-            </select>
-          </td>
-          <td><input type="number" step="1" id="newFeasSimp" placeholder="Simp." /></td>
-          <td>
-            <select id="newFeasModelFree">
-              <option value="true">&#10004;</option>
-              <option value="false">&#10007;</option>
-            </select>
-          </td>
-          <td>
-            <select id="newFeasDataFree">
-              <option value="true">&#10004;</option>
-              <option value="false">&#10007;</option>
-            </select>
-          </td>
-          <td>
-            <select id="newFeasChatFree">
-              <option value="true">&#10004;</option>
-              <option value="false">&#10007;</option>
-            </select>
-          </td>
-          <td><input type="number" step="1" id="newFeasFlex" placeholder="Flex." /></td>
-          <td><input type="number" step="1" id="newFeasFeas" placeholder="Feas." /></td>
-        </tr>
-      </tfoot>
-    </table>
+  <!-- ===== Feasibility Section ===== -->
+  <div class="section-container" id="feasibilitySection">
+    <h2>Feasibility Indicators</h2>
+    <!-- Feasibility Table & Plot in one row -->
+    <div class="row-container">
+      <div class="half">
+        <div class="table-container">
+          <table id="feasibilityTable" class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th># Trained LLMs</th>
+                <th># Algorithm Steps (Using LLMs)</th>
+                <th>Rep.</th>
+                <th>Model Free</th>
+                <th>Dataset Free</th>
+                <th>ChatGPT Free</th>
+                <th>Simplicity</th>
+                <th>Flexibility</th>
+                <th>Feasibility</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <td><input type="text" id="newFeasMethod" placeholder="Method Name" /></td>
+                <td><input type="text" id="newFeasLLM" placeholder="#LLMs" /></td>
+                <td><input type="text" id="newFeasSteps" placeholder="#Steps(LLMs)" /></td>
+                <td>
+                  <select id="newFeasRep">
+                    <option value="true">&#10004;</option>
+                    <option value="false">&#10007;</option>
+                  </select>
+                </td>
+                <td>
+                  <select id="newFeasModelFree">
+                    <option value="true">&#10004;</option>
+                    <option value="false">&#10007;</option>
+                  </select>
+                </td>
+                <td>
+                  <select id="newFeasDataFree">
+                    <option value="true">&#10004;</option>
+                    <option value="false">&#10007;</option>
+                  </select>
+                </td>
+                <td>
+                  <select id="newFeasChatFree">
+                    <option value="true">&#10004;</option>
+                    <option value="false">&#10007;</option>
+                  </select>
+                </td>
+                <td>Auto</td>
+                <td>Auto</td>
+                <td><input type="number" step="1" id="newFeasFeas" placeholder="Feas." /></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="half">
+        <div class="plot-container">
+          <canvas id="feasibilityCanvas" width="700" height="500"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Buttons -->
@@ -94,858 +140,690 @@
     <button id="saveBtn">Save Data &amp; Plots</button>
   </div>
 
-  <!-- ===== Efficiency Plot ===== -->
-  <h2>Efficiency Rank Plot</h2>
-  <div class="plot-container">
-    <canvas id="efficiencyCanvas" width="700" height="500"></canvas>
-  </div>
+  <script>
+    // ===============================================================
+    // Efficiency Calculation Functions (IO Interface Changes Only)
+    // ===============================================================
+    // Incorporate original efficiencyData as the default
+    let efficiencyData = [
+      { method: "AlpaGasus", sdf: 0.17, pir: 1.284 },
+      { method: "Superfiltering", sdf: 0.05, pir: 1.475 },
+      { method: "InsTag", sdf: 0.0196, pir: 1.344 },
+      { method: "DEITA", sdf: 0.1, pir: 1.426 },
+      { method: "InstructionGPT-4", sdf: 0.06, pir: 1.443 },
+      { method: "Nuggets", sdf: 0.15, pir: 1.519 },
+      { method: "IFD", sdf: 0.05, pir: 1.747 },
+      { method: "LESS", sdf: 0.05, pir: 1.491 },
+      { method: "Instruction-Mining", sdf: 0.025, pir: 1.400 },
+      { method: "SHED", sdf: 0.09, pir: 1.460 },
+      { method: "CaR", sdf: 0.0196, pir: 1.343 },
+      { method: "SelectIT", sdf: 0.2, pir: 1.653 }
+    ];
 
-  <!-- ===== Feasibility Plot ===== -->
-  <h2>Feasibility Rank Plot</h2>
-  <div class="plot-container">
-    <canvas id="feasibilityCanvas" width="700" height="500"></canvas>
-  </div>
-
-<script>
-// ====================================================================
-// Data from your references
-// ====================================================================
-const efficiencyData = [
-  { method: "AlpaGasus",          sdf: 0.17,  pir: 1.284 },
-  { method: "Superfiltering",     sdf: 0.05,  pir: 1.475 },
-  { method: "InsTag",             sdf: 0.0196,pir: 1.344 },
-  { method: "DEITA",              sdf: 0.1,   pir: 1.426 },
-  { method: "InstructionGPT-4",   sdf: 0.06,  pir: 1.443 },
-  { method: "Nuggets",            sdf: 0.15,  pir: 1.519 },
-  { method: "IFD",                sdf: 0.05,  pir: 1.747 },
-  { method: "LESS",               sdf: 0.05,  pir: 1.491 },
-  { method: "Instruction-Mining", sdf: 0.025, pir: 1.400 },
-  { method: "SHED",               sdf: 0.09,  pir: 1.460 },
-  { method: "CaR",                sdf: 0.0196,pir: 1.343 },
-  { method: "SelectIT",           sdf: 0.2,   pir: 1.653 }
-];
-
-const feasibilityData = [
-  {
-    method: "AlpaGasus",
-    llmCount: "0",
-    steps: "2(1)",
-    rep: false,
-    simplicity: 1,
-    modelFree: true,
-    datasetFree: true,
-    chatGPTFree: false,
-    flexibility: 1,
-    feasibility: 1
-  },
-  {
-    method: "InsTag",
-    llmCount: "0",
-    steps: "3(1)",
-    rep: false,
-    simplicity: 1,
-    modelFree: true,
-    datasetFree: true,
-    chatGPTFree: false,
-    flexibility: 1,
-    feasibility: 2
-  },
-  {
-    method: "CaR",
-    llmCount: "0",
-    steps: "4(0)",
-    rep: true,
-    simplicity: 2,
-    modelFree: true,
-    datasetFree: true,
-    chatGPTFree: false,
-    flexibility: 2,
-    feasibility: 3
-  },
-  {
-    method: "Nuggets",
-    llmCount: "0",
-    steps: "4(2)",
-    rep: true,
-    simplicity: 2,
-    modelFree: true,
-    datasetFree: true,
-    chatGPTFree: false,
-    flexibility: 2,
-    feasibility: 3
-  },
-  {
-    method: "SelectIT",
-    llmCount: "0",
-    steps: "4(3)",
-    rep: true,
-    simplicity: 2,
-    modelFree: true,
-    datasetFree: true,
-    chatGPTFree: false,
-    flexibility: 2,
-    feasibility: 3
-  },
-  {
-    method: "Superfiltering",
-    llmCount: "1*",
-    steps: "3(1*)",
-    rep: true,
-    simplicity: 3,
-    modelFree: true,
-    datasetFree: true,
-    chatGPTFree: false,
-    flexibility: 4,
-    feasibility: 4
-  },
-  {
-    method: "IFD",
-    llmCount: "1",
-    steps: "3(1)",
-    rep: false,
-    simplicity: 4,
-    modelFree: false,
-    datasetFree: false,
-    chatGPTFree: false,
-    flexibility: 3,
-    feasibility: 5
-  },
-  {
-    method: "LESS",
-    llmCount: "1",
-    steps: "4(2)",
-    rep: true,
-    simplicity: 5,
-    modelFree: false,
-    datasetFree: false,
-    chatGPTFree: false,
-    flexibility: 3,
-    feasibility: 6
-  },
-  {
-    method: "DEITA",
-    llmCount: "2",
-    steps: "5(4)",
-    rep: true,
-    simplicity: 6,
-    modelFree: false,
-    datasetFree: false,
-    chatGPTFree: true,
-    flexibility: 3,
-    feasibility: 7
-  },
-  {
-    method: "InstructionGPT-4",
-    llmCount: "30",
-    steps: "4(1)",
-    rep: false,
-    simplicity: 7,
-    modelFree: false,
-    datasetFree: false,
-    chatGPTFree: false,
-    flexibility: 4,
-    feasibility: 7
-  },
-  {
-    method: "SHED",
-    llmCount: "500",
-    steps: "3(0)",
-    rep: true,
-    simplicity: 8,
-    modelFree: false,
-    datasetFree: false,
-    chatGPTFree: true,
-    flexibility: 3,
-    feasibility: 7
-  },
-  {
-    method: "Instruction-Mining",
-    llmCount: "129",
-    steps: "4(0)",
-    rep: false,
-    simplicity: 8,
-    modelFree: true,
-    datasetFree: true,
-    chatGPTFree: false,
-    flexibility: 4,
-    feasibility: 8
-  }
-];
-
-// ====================================================================
-// Populate Tables
-// ====================================================================
-function populateTables() {
-  // Efficiency
-  const effTbody = document.querySelector("#efficiencyTable tbody");
-  effTbody.innerHTML = "";
-  efficiencyData.forEach(d => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${d.method}</td>
-      <td>${d.sdf}</td>
-      <td>${d.pir}</td>
-    `;
-    effTbody.appendChild(tr);
-  });
-
-  // Feasibility
-  const feasTbody = document.querySelector("#feasibilityTable tbody");
-  feasTbody.innerHTML = "";
-  feasibilityData.forEach(d => {
-    const repVal = d.rep ? "&#10004;" : "&#10007;";
-    const mfVal  = d.modelFree   ? "&#10004;" : "&#10007;";
-    const dfVal  = d.datasetFree ? "&#10004;" : "&#10007;";
-    const cfVal  = d.chatGPTFree ? "&#10004;" : "&#10007;";
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${d.method}</td>
-      <td>${d.llmCount}</td>
-      <td>${d.steps}</td>
-      <td>${repVal}</td>
-      <td>${d.simplicity}</td>
-      <td>${mfVal}</td>
-      <td>${dfVal}</td>
-      <td>${cfVal}</td>
-      <td>${d.flexibility}</td>
-      <td>${d.feasibility}</td>
-    `;
-    feasTbody.appendChild(tr);
-  });
-}
-
-// ====================================================================
-// Add new rows based on user input
-// ====================================================================
-function addNewRows() {
-  // Efficiency
-  const m   = document.getElementById("newEfficiencyMethod").value.trim();
-  const sdf = parseFloat(document.getElementById("newEfficiencySDF").value);
-  const pir = parseFloat(document.getElementById("newEfficiencyPIR").value);
-  if (m && !isNaN(sdf) && !isNaN(pir)) {
-    efficiencyData.push({ method: m, sdf: sdf, pir: pir });
-  }
-
-  // Feasibility
-  const fm      = document.getElementById("newFeasMethod").value.trim();
-  const fllm    = document.getElementById("newFeasLLM").value.trim();
-  const fsteps  = document.getElementById("newFeasSteps").value.trim();
-  const frep    = document.getElementById("newFeasRep").value === "true";
-  const fsimp   = parseInt(document.getElementById("newFeasSimp").value);
-  const fmf     = document.getElementById("newFeasModelFree").value === "true";
-  const fdf     = document.getElementById("newFeasDataFree").value === "true";
-  const fcf     = document.getElementById("newFeasChatFree").value === "true";
-  const fflex   = parseInt(document.getElementById("newFeasFlex").value);
-  const ffeas   = parseInt(document.getElementById("newFeasFeas").value);
-
-  if (fm && fllm && fsteps && !isNaN(fsimp) && !isNaN(fflex) && !isNaN(ffeas)) {
-    feasibilityData.push({
-      method: fm,
-      llmCount: fllm,
-      steps: fsteps,
-      rep: frep,
-      simplicity: fsimp,
-      modelFree: fmf,
-      datasetFree: fdf,
-      chatGPTFree: fcf,
-      flexibility: fflex,
-      feasibility: ffeas
-    });
-  }
-}
-
-// ====================================================================
-// High-DPI Canvas Setup -- always use the intrinsic size
-// ====================================================================
-// outside the function:
-let originalWidth, originalHeight;
-let didStoreOriginal = false;
-
-function setupHiDPICanvas(canvasId) {
-  const canvas = document.getElementById(canvasId);
-  const ctx = canvas.getContext("2d");
-  const dpr = window.devicePixelRatio || 1;
-
-  if (!didStoreOriginal) {
-    // store the initial .width & .height
-    originalWidth = canvas.width;
-    originalHeight = canvas.height;
-    didStoreOriginal = true;
-  }
-
-  // revert to the original unscaled size * dpr
-  canvas.width = originalWidth * dpr;
-  canvas.height = originalHeight * dpr;
-  canvas.style.width = originalWidth + "px";
-  canvas.style.height = originalHeight + "px";
-  ctx.scale(dpr, dpr);
-
-  return ctx;
-}
-
-
-
-// ====================================================================
-// Utility: Project point P onto line AB perpendicularly
-// Returns [projX, projY]
-// ====================================================================
-function projectPointToLine(px, py, x1, y1, x2, y2) {
-  const ABx = x2 - x1;
-  const ABy = y2 - y1;
-  const APx = px - x1;
-  const APy = py - y1;
-  const ab2 = ABx*ABx + ABy*ABy;
-  if (ab2 < 1e-10) {
-    // A and B are nearly the same, fallback
-    return [x1, y1];
-  }
-  const t = (APx*ABx + APy*ABy) / ab2;
-  const projx = x1 + t*ABx;
-  const projy = y1 + t*ABy;
-  return [projx, projy];
-}
-
-// ====================================================================
-// Draw Ticks on X or Y axis
-// ====================================================================
-function drawAxisTicks(ctx, minVal, maxVal, step, xScale, yScale, axis="x") {
-  ctx.save();
-  ctx.fillStyle = "#000";
-  ctx.font = "12px sans-serif";
-  ctx.textAlign = "center";
-
-  let v = minVal;
-  while (v <= maxVal + 1e-9) {
-    const valStr = (Math.abs(v) < 1e-6) ? "0" : v.toFixed(2).replace(/\.?0+$/,"");
-    if (axis === "x") {
-      const x = xScale(v);
-      const y0 = yScale(minVal);
-      ctx.beginPath();
-      ctx.moveTo(x, y0);
-      ctx.lineTo(x, y0 + 5);
-      ctx.stroke();
-      ctx.fillText(valStr, x, y0 + 15);
-    } else {
-      const y = yScale(v);
-      const x0 = xScale(minVal);
-      ctx.beginPath();
-      ctx.moveTo(x0, y);
-      ctx.lineTo(x0 - 5, y);
-      ctx.stroke();
-      ctx.textAlign = "right";
-      ctx.textBaseline = "middle";
-      ctx.fillText(valStr, x0 - 8, y);
-      ctx.textAlign = "center";
+    function linearTransform(x, x_vals, y_vals) {
+      let x1 = x_vals[0], x2 = x_vals[1];
+      let y1 = y_vals[0], y2 = y_vals[1];
+      let m = (y2 - y1) / (x2 - x1);
+      let b = y1 - m * x1;
+      return m * x + b;
     }
-    v += step;
-  }
 
-  ctx.restore();
-}
-
-// ====================================================================
-// Draw Efficiency Plot
-// ====================================================================
-// ====================================================================
-// Draw Efficiency Plot (Updated to handle new data safely)
-// ====================================================================
-function drawEfficiencyPlot() {
-  const ctx = setupHiDPICanvas("efficiencyCanvas");
-  const canvas = document.getElementById("efficiencyCanvas");
-  const dpr = window.devicePixelRatio || 1;
-  const W = canvas.width / dpr;
-  const H = canvas.height / dpr;
-  ctx.clearRect(0, 0, W, H);
-
-  const pad = 60;
-  const innerPad = 20;  // for the colored rect
-
-  // -- 1) Determine SDF & PIR ranges dynamically but keep a floor of 0.0 on SDF
-  //       and keep your same general bounding style for PIR.
-  // <--- added/changed below:
-  const minSDFdata = Math.min(...efficiencyData.map(d => d.sdf));
-  const maxSDFdata = Math.max(...efficiencyData.map(d => d.sdf));
-  const minSDF = Math.min(0.0, minSDFdata);  // clamp to 0 if data is > 0
-  // Expand the max to give some padding (like your *1.05).
-  const maxSDF = (maxSDFdata > 0.2 ? maxSDFdata : 0.2) * 1.05;  
-
-  // For PIR, do not hard‐code 1.24 if you want to let new data go below it.
-  // But keep your top expansion style. If you *must* not go below ~1.24, you can do so.
-  const minPIRdata = Math.min(...efficiencyData.map(d => d.pir));
-  const maxPIRdata = Math.max(...efficiencyData.map(d => d.pir));
-  const minPIR = minPIRdata * 0.95; // or just do (minPIRdata - 0.05) etc.
-  const maxPIR = (maxPIRdata > 1.75 ? maxPIRdata : 1.75) * 1.05 + 0.01;
-
-  // Safety check to ensure min < max:
-  const pirRange = maxPIR - minPIR;
-  if (pirRange < 1e-9) {
-    // If all PIRs are basically the same value, artificially expand
-    // to avoid division by zero or basically an empty scale:
-    maxPIR = minPIR + 0.1;
-  }
-
-  // -- 2) Build scaling functions
-  const xScale = val =>
-    pad + ((val - minSDF) / (maxSDF - minSDF)) * (W - 2 * pad);
-
-  const yScale = val =>
-    (H - pad) - ((val - minPIR) / (maxPIR - minPIR)) * (H - 2 * pad);
-
-  // -- 3) Draw axes
-  ctx.beginPath();
-  // X axis
-  ctx.moveTo(pad, H - pad);
-  ctx.lineTo(W - pad, H - pad);
-  // Y axis
-  ctx.moveTo(pad, H - pad);
-  ctx.lineTo(pad, pad);
-  ctx.strokeStyle = "#333";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // -- 4) Axis Ticks
-  function drawAxisTicks(ctx, minVal, maxVal, step, xScale, yScale, axis="x") {
-    ctx.save();
-    ctx.fillStyle = "#000";
-    ctx.font = "12px sans-serif";
-    ctx.textAlign = (axis === "x" ? "center" : "right");
-    
-    let v = minVal;
-    while (v <= maxVal + 1e-9) {
-      const valStr = (Math.abs(v) < 1e-6) ? "0" : v.toFixed(2).replace(/\.?0+$/,"");
-      if (axis === "x") {
-        const x = xScale(v);
-        const y0 = yScale(minVal);
-        ctx.beginPath();
-        ctx.moveTo(x, y0);
-        ctx.lineTo(x, y0 + 5);
-        ctx.stroke();
-        ctx.fillText(valStr, x, y0 + 15);
-      } else {
-        const y = yScale(v);
-        const x0 = xScale(minVal);
-        ctx.beginPath();
-        ctx.moveTo(x0, y);
-        ctx.lineTo(x0 - 5, y);
-        ctx.stroke();
-        ctx.textBaseline = "middle";
-        ctx.fillText(valStr, x0 - 8, y);
+    function transform(sameBenchPir = 0, othBenchPir = 0) {
+      if (sameBenchPir !== 0) {
+        return linearTransform(sameBenchPir, [0.949, 1.01], [1.284, 1.475]);
+      } else if (othBenchPir !== 0) {
+        return linearTransform(othBenchPir, [0.985, 1.000], [1.344, 1.426]);
       }
-      v += step;
+      return null;
     }
-    ctx.restore();
-  }
 
-  // X: from minSDF to maxSDF in steps
-  //    If your data is mostly around 0.0..0.2, you might pick 0.05 steps
-  const xStep = 0.05;
-  drawAxisTicks(ctx, minSDF, maxSDF, xStep, xScale, v => H - pad, "x");
-
-  // Y: from minPIR to maxPIR in ~0.1 steps
-  //    Or adapt a step = pirRange / 10 or so
-  const yStep = 0.1;
-  drawAxisTicks(ctx, minPIR, maxPIR, yStep, v => pad, yScale, "y");
-
-  // -- 5) Axis labels
-  ctx.save();
-  ctx.fillStyle = "#000";
-  ctx.font = "16px sans-serif";
-  // X label
-  ctx.textAlign = "center";
-  ctx.fillText("Selected Dataset Fraction (SDF)", W / 2, H - 20);
-  // Y label
-  ctx.translate(20, H / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillText("Performance Improvement Ratio (PIR)", 0, 0);
-  ctx.restore();
-
-  // -- 6) Identify baseline points (Instruction‐Mining & InstructionGPT‐4)
-  // If either is missing, or they end up identical, just skip the shading part.
-  // <--- added/changed fallback logic below:
-  const A = efficiencyData.find(d => d.method === "Instruction-Mining");
-  const B = efficiencyData.find(d => d.method === "InstructionGPT-4");
-
-  let canDrawBaseline = (A && B);
-
-  if (canDrawBaseline) {
-    // Check if they are effectively the same point (avoid slope=Infinity or 0/0):
-    const dx = B.sdf - A.sdf;
-    const dy = B.pir - A.pir;
-    if (Math.abs(dx) < 1e-12) {
-      // They have ~the same SDF, so slope would blow up. We'll skip shading.
-      canDrawBaseline = false;
+    function getPIR(type, SEM = null, BM = null, pir = null) {
+      let PIR;
+      if (pir === null && SEM !== null && BM !== null) {
+        if (SEM.length !== BM.length) {
+          console.error("Error: SEM and BM must have the same length.");
+          return "Invalid input: SEM and BM must have the same length.";
+        }
+        let pirArray = SEM.map((sem, i) => sem / BM[i]);
+        pir = pirArray.reduce((a, b) => a + b, 0) / pirArray.length;
+      }
+      if (type === "same_win_rate") {
+        PIR = pir;
+      } else if (type === "same_benchmark") {
+        PIR = transform(sameBenchPir = pir);
+      } else if (type === "other_benchmark") {
+        PIR = transform(othBenchPir = pir);
+      }
+      return PIR;
     }
-  }
 
-  // We'll define variables for the line only if canDrawBaseline is true:
-  let X1, Y1, X2, Y2; // extended baseline coords in pixel space
+    // Read efficiency inputs, compute average PIR, and populate the table.
+    // If no input is provided, default to the original efficiencyData.
+    function populateEfficiencyTable() {
+      const effTbody = document.querySelector("#efficiencyTable tbody");
+      effTbody.innerHTML = "";
+      const SEMInput = document.getElementById("SEM").value.trim();
+      const BMInput = document.getElementById("BM").value.trim();
+      const SDFInput = document.getElementById("SDF").value.trim();
 
-  if (canDrawBaseline) {
-    // The slope
-    const slope = (B.pir - A.pir) / (B.sdf - A.sdf);
+      // If any input is empty, use the default efficiencyData
+      if (!SEMInput || !BMInput || !SDFInput) {
+        efficiencyData.forEach(d => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${d.method}</td>
+                          <td>${d.sdf}</td>
+                          <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>`;
+          effTbody.appendChild(tr);
+        });
+        return;
+      }
 
-    // The colored region “rectangle” boundaries in pixel space:
-    const colorRectLeft   = pad + innerPad;
-    const colorRectRight  = W - pad - innerPad;
-    const colorRectTop    = pad + innerPad;
-    const colorRectBottom = H - pad - innerPad;
+      // Otherwise, recalculate based on user input.
+      const methodNamesInput = document.getElementById("effMethodNames").value.trim();
+      const methods = methodNamesInput ? methodNamesInput.split(",").map(s => s.trim()) : [];
+      const pirType = document.getElementById("pirType").value;
+      const SEM = SEMInput.split(",").map(Number);
+      const BM = BMInput.split(",").map(Number);
+      const SDF = SDFInput.split(",").map(Number);
 
-    // Convert colorRectLeft..Right from pixel->data for SDF
-    const leftSDF  = minSDF + ((colorRectLeft  - pad) / (W - 2*pad))*(maxSDF - minSDF);
-    const rightSDF = minSDF + ((colorRectRight - pad) / (W - 2*pad))*(maxSDF - minSDF);
-
-    // Evaluate the line's PIR at leftSDF and rightSDF
-    const yAtLeft  = A.pir + slope * (leftSDF  - A.sdf);
-    const yAtRight = A.pir + slope * (rightSDF - A.sdf);
-
-    // Map them to pixel coords
-    X1 = colorRectLeft;
-    Y1 = yScale(yAtLeft);
-    X2 = colorRectRight;
-    Y2 = yScale(yAtRight);
-
-    // Fill entire rectangle with #e8fff7
-    ctx.save();
-    ctx.fillStyle = "#e8fff7";
-    ctx.fillRect(
-      colorRectLeft,
-      colorRectTop,
-      colorRectRight - colorRectLeft,
-      colorRectBottom - colorRectTop
-    );
-    ctx.restore();
-
-    // Fill below baseline with #f6dfdf
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(X1, Y1);
-    ctx.lineTo(X2, Y2);
-    ctx.lineTo(X2, colorRectBottom);
-    ctx.lineTo(X1, colorRectBottom);
-    ctx.closePath();
-    ctx.fillStyle = "#f6dfdf";
-    ctx.fill();
-    ctx.restore();
-
-    // Draw the extended dashed baseline
-    ctx.save();
-    ctx.setLineDash([13, 5]);
-    ctx.strokeStyle = "orange";
-    ctx.lineWidth = 3.5;
-    ctx.beginPath();
-    ctx.moveTo(X1, Y1);
-    ctx.lineTo(X2, Y2);
-    ctx.stroke();
-    ctx.restore();
-  } else {
-    // If missing or identical, optionally fill the entire background or do nothing
-    // For demonstration, we'll fill the whole area with #e8fff7, no #f6dfdf:
-    ctx.save();
-    const colorRectLeft   = pad + innerPad;
-    const colorRectRight  = W - pad - innerPad;
-    const colorRectTop    = pad + innerPad;
-    const colorRectBottom = H - pad - innerPad;
-    ctx.fillStyle = "#e8fff7";
-    ctx.fillRect(
-      colorRectLeft,
-      colorRectTop,
-      colorRectRight - colorRectLeft,
-      colorRectBottom - colorRectTop
-    );
-    ctx.restore();
-  }
-
-  // -- 7) Utility to project a point perpendicularly onto the baseline line
-  // <--- same as your existing code
-  function projectPointToLine(px, py, x1, y1, x2, y2) {
-    const ABx = x2 - x1;
-    const ABy = y2 - y1;
-    const APx = px - x1;
-    const APy = py - y1;
-    const ab2 = ABx*ABx + ABy*ABy;
-    if (ab2 < 1e-10) {
-      // line degenerate
-      return [x1, y1];
-    }
-    const t = (APx*ABx + APy*ABy) / ab2;
-    return [x1 + t*ABx, y1 + t*ABy];
-  }
-
-  // -- 8) Collision‐avoidance for text labels
-  const usedLabels = []; // Store (x, y) pairs
-  function placeLabel(px, py, text) {
-    let labelY = py + 10;  // Start slightly above the point
-
-    while (usedLabels.some(([ux, uy]) => 
-        Math.abs(uy - labelY) < 10 && Math.abs(ux - px) < 20)) {  
-      // Check both y and x distances
+      if (SEM.length !== BM.length || SEM.length !== SDF.length) {
+        alert("SEM, BM, and SDF inputs must have the same number of values.");
+        return;
+      }
       
-      labelY += 12; 
+      const pirValue = getPIR(pirType, SEM, BM);
+      // Overwrite the global array with new computed values.
+      efficiencyData = [];
+      for (let i = 0; i < SEM.length; i++) {
+        const methodName = methods[i] ? methods[i] : "Method " + (i + 1);
+        efficiencyData.push({
+          method: methodName,
+          sdf: SDF[i],
+          pir: pirValue
+        });
+      }
+      
+      efficiencyData.forEach(d => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${d.method}</td>
+                        <td>${d.sdf}</td>
+                        <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>`;
+        effTbody.appendChild(tr);
+      });
     }
 
-    usedLabels.push([px, labelY]); // Store both x and y
-    ctx.fillText(text, px + 4, labelY);
-  }
+    // ===============================================================
+    // Feasibility Data and Table (Input and Auto-calculated Columns)
+    // ===============================================================
+    const feasibilityData = [
+      {
+        method: "AlpaGasus",
+        llmCount: "0",
+        steps: "2(1)",
+        rep: false,
+        simplicity: 1,
+        modelFree: true,
+        datasetFree: true,
+        chatGPTFree: false,
+        flexibility: 1,
+        feasibility: 1
+      },
+      {
+        method: "InsTag",
+        llmCount: "0",
+        steps: "3(1)",
+        rep: false,
+        simplicity: 1,
+        modelFree: true,
+        datasetFree: true,
+        chatGPTFree: false,
+        flexibility: 1,
+        feasibility: 2
+      },
+      {
+        method: "CaR",
+        llmCount: "0",
+        steps: "4(0)",
+        rep: true,
+        simplicity: 2,
+        modelFree: true,
+        datasetFree: true,
+        chatGPTFree: false,
+        flexibility: 2,
+        feasibility: 3
+      },
+      {
+        method: "Nuggets",
+        llmCount: "0",
+        steps: "4(2)",
+        rep: true,
+        simplicity: 2,
+        modelFree: true,
+        datasetFree: true,
+        chatGPTFree: false,
+        flexibility: 2,
+        feasibility: 3
+      },
+      {
+        method: "SelectIT",
+        llmCount: "0",
+        steps: "4(3)",
+        rep: true,
+        simplicity: 2,
+        modelFree: true,
+        datasetFree: true,
+        chatGPTFree: false,
+        flexibility: 2,
+        feasibility: 3
+      },
+      {
+        method: "Superfiltering",
+        llmCount: "1*",
+        steps: "3(1*)",
+        rep: true,
+        simplicity: 3,
+        modelFree: true,
+        datasetFree: true,
+        chatGPTFree: false,
+        flexibility: 4,
+        feasibility: 4
+      },
+      {
+        method: "IFD",
+        llmCount: "1",
+        steps: "3(1)",
+        rep: false,
+        simplicity: 4,
+        modelFree: false,
+        datasetFree: false,
+        chatGPTFree: false,
+        flexibility: 3,
+        feasibility: 5
+      },
+      {
+        method: "LESS",
+        llmCount: "1",
+        steps: "4(2)",
+        rep: true,
+        simplicity: 5,
+        modelFree: false,
+        datasetFree: false,
+        chatGPTFree: false,
+        flexibility: 3,
+        feasibility: 6
+      },
+      {
+        method: "DEITA",
+        llmCount: "2",
+        steps: "5(4)",
+        rep: true,
+        simplicity: 6,
+        modelFree: false,
+        datasetFree: false,
+        chatGPTFree: true,
+        flexibility: 3,
+        feasibility: 7
+      },
+      {
+        method: "InstructionGPT-4",
+        llmCount: "30",
+        steps: "4(1)",
+        rep: false,
+        simplicity: 7,
+        modelFree: false,
+        datasetFree: false,
+        chatGPTFree: false,
+        flexibility: 4,
+        feasibility: 7
+      },
+      {
+        method: "SHED",
+        llmCount: "500",
+        steps: "3(0)",
+        rep: true,
+        simplicity: 8,
+        modelFree: false,
+        datasetFree: false,
+        chatGPTFree: true,
+        flexibility: 3,
+        feasibility: 7
+      },
+      {
+        method: "Instruction-Mining",
+        llmCount: "129",
+        steps: "4(0)",
+        rep: false,
+        simplicity: 8,
+        modelFree: true,
+        datasetFree: true,
+        chatGPTFree: false,
+        flexibility: 4,
+        feasibility: 8
+      }
+    ];
 
+    function populateFeasibilityTable() {
+      const feasTbody = document.querySelector("#feasibilityTable tbody");
+      feasTbody.innerHTML = "";
+      feasibilityData.forEach(d => {
+        const repVal = d.rep ? "&#10004;" : "&#10007;";
+        const mfVal  = d.modelFree   ? "&#10004;" : "&#10007;";
+        const dfVal  = d.datasetFree ? "&#10004;" : "&#10007;";
+        const cfVal  = d.chatGPTFree ? "&#10004;" : "&#10007;";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${d.method}</td>
+                        <td>${d.llmCount}</td>
+                        <td>${d.steps}</td>
+                        <td>${repVal}</td>
+                        <td>${mfVal}</td>
+                        <td>${dfVal}</td>
+                        <td>${cfVal}</td>
+                        <td>${d.simplicity}</td>
+                        <td>${d.flexibility}</td>
+                        <td>${d.feasibility}</td>`;
+        feasTbody.appendChild(tr);
+      });
+    }
 
-  // -- 9) Plot each data point
-  efficiencyData.forEach(d => {
-    // (a) Convert to pixel
-    const px = xScale(d.sdf);
-    const py = yScale(d.pir);
+    // Adds a new feasibility row based on tfoot inputs.
+    function addNewFeasibilityRow() {
+      const fm = document.getElementById("newFeasMethod").value.trim();
+      const fllm = document.getElementById("newFeasLLM").value.trim();
+      const fsteps = document.getElementById("newFeasSteps").value.trim();
+      const frep = document.getElementById("newFeasRep").value === "true";
+      const fmf = document.getElementById("newFeasModelFree").value === "true";
+      const fdf = document.getElementById("newFeasDataFree").value === "true";
+      const fcf = document.getElementById("newFeasChatFree").value === "true";
+      const ffeas = parseInt(document.getElementById("newFeasFeas").value);
+      if (fm && fllm && fsteps && !isNaN(ffeas)) {
+        const fsimp = "Auto";
+        const fflex = "Auto";
+        feasibilityData.push({
+          method: fm,
+          llmCount: fllm,
+          steps: fsteps,
+          rep: frep,
+          simplicity: fsimp,
+          modelFree: fmf,
+          datasetFree: fdf,
+          chatGPTFree: fcf,
+          flexibility: fflex,
+          feasibility: ffeas
+        });
+      }
+    }
 
-    // (b) If we have a valid baseline, project onto that line
-    if (canDrawBaseline) {
-      const [fx, fy] = projectPointToLine(px, py, X1, Y1, X2, Y2);
-      // color line: green if above, red if below
-      const colorLine = (py < fy) ? "green" : "red";
+    // ===============================================================
+    // The Plotting Functions (DO NOT MODIFY ANYTHING BELOW!)
+    // ===============================================================
+    let originalWidth, originalHeight;
+    let didStoreOriginal = false;
 
-      // dashed projection
+    function setupHiDPICanvas(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      if (!didStoreOriginal) {
+        originalWidth = canvas.width;
+        originalHeight = canvas.height;
+        didStoreOriginal = true;
+      }
+      canvas.width = originalWidth * dpr;
+      canvas.height = originalHeight * dpr;
+      canvas.style.width = originalWidth + "px";
+      canvas.style.height = originalHeight + "px";
+      ctx.scale(dpr, dpr);
+      return ctx;
+    }
+
+    function projectPointToLine(px, py, x1, y1, x2, y2) {
+      const ABx = x2 - x1;
+      const ABy = y2 - y1;
+      const APx = px - x1;
+      const APy = py - y1;
+      const ab2 = ABx * ABx + ABy * ABy;
+      if (ab2 < 1e-10) return [x1, y1];
+      const t = (APx * ABx + APy * ABy) / ab2;
+      return [x1 + t * ABx, y1 + t * ABy];
+    }
+
+    function drawAxisTicks(ctx, minVal, maxVal, step, scaleFunc, axis = "x") {
       ctx.save();
-      ctx.setLineDash([13, 3, 2, 3]);
-      ctx.strokeStyle = colorLine;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(px, py);
-      ctx.lineTo(fx, fy);
-      ctx.stroke();
+      ctx.fillStyle = "#000";
+      ctx.font = "12px sans-serif";
+      ctx.textAlign = axis === "x" ? "center" : "right";
+      let v = minVal;
+      while (v <= maxVal + 1e-9) {
+        const valStr = (Math.abs(v) < 1e-6) ? "0" : v.toFixed(2).replace(/\.?0+$/, "");
+        if (axis === "x") {
+          const x = scaleFunc(v);
+          const y0 = scaleFunc(minVal);
+          ctx.beginPath();
+          ctx.moveTo(x, y0);
+          ctx.lineTo(x, y0 + 5);
+          ctx.stroke();
+          ctx.fillText(valStr, x, y0 + 15);
+        } else {
+          const y = scaleFunc(v);
+          const x0 = scaleFunc(minVal);
+          ctx.beginPath();
+          ctx.moveTo(x0, y);
+          ctx.lineTo(x0 - 5, y);
+          ctx.stroke();
+          ctx.textBaseline = "middle";
+          ctx.fillText(valStr, x0 - 8, y);
+        }
+        v += step;
+      }
       ctx.restore();
     }
 
-    // (c) Draw the marker
-    ctx.save();
-    ctx.fillStyle = "#1f77b4";
-    ctx.beginPath();
-    // Triangle shape as in your original
-    ctx.moveTo(px,   py + 5);
-    ctx.lineTo(px-5, py - 4);
-    ctx.lineTo(px+5, py - 4);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
+    // -------------------------
+    // Draw Efficiency Plot
+    // -------------------------
+    function drawEfficiencyPlot() {
+      const ctx = setupHiDPICanvas("efficiencyCanvas");
+      const canvas = document.getElementById("efficiencyCanvas");
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.width / dpr;
+      const H = canvas.height / dpr;
+      ctx.clearRect(0, 0, W, H);
+      const pad = 60;
+      const innerPad = 20;
 
-    // (d) Label
-    ctx.save();
-    ctx.font = "14px sans-serif";
-    ctx.fillStyle = "#000";
-    ctx.textAlign = "left";
-    placeLabel(px, py, d.method);
-    ctx.restore();
-  });
-}
+      const minSDFdata = Math.min(...efficiencyData.map(d => d.sdf));
+      const maxSDFdata = Math.max(...efficiencyData.map(d => d.sdf));
+      const minSDF = Math.min(0.0, minSDFdata);
+      const maxSDF = (maxSDFdata > 0.2 ? maxSDFdata : 0.2) * 1.05;
 
+      const minPIRdata = Math.min(...efficiencyData.map(d => d.pir));
+      let maxPIR = Math.max(...efficiencyData.map(d => d.pir));
+      const minPIR = minPIRdata * 0.95;
+      maxPIR = (maxPIR > 1.75 ? maxPIR : 1.75) * 1.05 + 0.01;
 
+      const xScale = val => pad + ((val - minSDF) / (maxSDF - minSDF)) * (W - 2 * pad);
+      const yScale = val => (H - pad) - ((val - minPIR) / (maxPIR - minPIR)) * (H - 2 * pad);
 
-
-// ====================================================================
-// Draw Feasibility Plot with Perpendicular Projections
-// The user wants to rank by sum = simplicity + flexibility, then place
-// rank markers from (0,0)->(8,8). Also each method projects onto that
-// diagonal line perpendicularly.
-// ====================================================================
-function drawFeasibilityPlot() {
-  const ctx = setupHiDPICanvas("feasibilityCanvas");
-  const canvas = document.getElementById("feasibilityCanvas");
-  const W = canvas.width / (window.devicePixelRatio || 1);
-  const H = canvas.height / (window.devicePixelRatio || 1);
-  ctx.clearRect(0, 0, W, H);
-
-  const pad = 60;
-  const minVal = 0, maxVal = 8;
-
-  // scale
-  const xScale = v => pad + (v - minVal)/(maxVal - minVal)*(W - 2*pad);
-  const yScale = v => (H - pad) - (v - minVal)/(maxVal - minVal)*(H - 2*pad);
-
-  // Axes
-  ctx.beginPath();
-  // x axis
-  ctx.moveTo(pad, H-pad);
-  ctx.lineTo(W-pad, H-pad);
-  // y axis
-  ctx.moveTo(pad, H-pad);
-  ctx.lineTo(pad, pad);
-  ctx.strokeStyle = "#333";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Ticks on x from 0..8 step1
-  function drawFeasTicks() {
-    ctx.save();
-    ctx.font = "12px sans-serif";
-    ctx.fillStyle = "#000";
-    // x ticks
-    for (let v=0; v<=8; v++) {
-      const x = xScale(v), y0 = yScale(0);
       ctx.beginPath();
-      ctx.moveTo(x, y0);
-      ctx.lineTo(x, y0+5);
+      ctx.moveTo(pad, H - pad);
+      ctx.lineTo(W - pad, H - pad);
+      ctx.moveTo(pad, H - pad);
+      ctx.lineTo(pad, pad);
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.fillText(v.toString(), x, y0+15);
+
+      drawAxisTicks(ctx, minSDF, maxSDF, 0.05, xScale, "x");
+      drawAxisTicks(ctx, minPIR, maxPIR, 0.1, yScale, "y");
+
+      ctx.save();
+      ctx.fillStyle = "#000";
+      ctx.font = "16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Selected Dataset Fraction (SDF)", W / 2, H - 20);
+      ctx.translate(20, H / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("Performance Improvement Ratio (PIR)", 0, 0);
+      ctx.restore();
+
+      const A = efficiencyData.find(d => d.method === "Instruction-Mining");
+      const B = efficiencyData.find(d => d.method === "InstructionGPT-4");
+      let canDrawBaseline = (A && B);
+      let X1, Y1, X2, Y2;
+      if (canDrawBaseline) {
+        const dx = B.sdf - A.sdf;
+        if (Math.abs(dx) < 1e-12) canDrawBaseline = false;
+      }
+      if (canDrawBaseline) {
+        const slope = (B.pir - A.pir) / (B.sdf - A.sdf);
+        const colorRectLeft = pad + innerPad;
+        const colorRectRight = W - pad - innerPad;
+        const colorRectTop = pad + innerPad;
+        const colorRectBottom = H - pad - innerPad;
+        const leftSDF = minSDF + ((colorRectLeft - pad) / (W - 2 * pad)) * (maxSDF - minSDF);
+        const rightSDF = minSDF + ((colorRectRight - pad) / (W - 2 * pad)) * (maxSDF - minSDF);
+        const yAtLeft = A.pir + slope * (leftSDF - A.sdf);
+        const yAtRight = A.pir + slope * (rightSDF - A.sdf);
+        X1 = colorRectLeft;
+        Y1 = yScale(yAtLeft);
+        X2 = colorRectRight;
+        Y2 = yScale(yAtRight);
+        ctx.save();
+        ctx.fillStyle = "#e8fff7";
+        ctx.fillRect(colorRectLeft, colorRectTop, colorRectRight - colorRectLeft, colorRectBottom - colorRectTop);
+        ctx.restore();
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(X1, Y1);
+        ctx.lineTo(X2, Y2);
+        ctx.lineTo(X2, colorRectBottom);
+        ctx.lineTo(X1, colorRectBottom);
+        ctx.closePath();
+        ctx.fillStyle = "#f6dfdf";
+        ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.setLineDash([13, 5]);
+        ctx.strokeStyle = "orange";
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(X1, Y1);
+        ctx.lineTo(X2, Y2);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.save();
+        const colorRectLeft = pad + innerPad;
+        const colorRectRight = W - pad - innerPad;
+        const colorRectTop = pad + innerPad;
+        const colorRectBottom = H - pad - innerPad;
+        ctx.fillStyle = "#e8fff7";
+        ctx.fillRect(colorRectLeft, colorRectTop, colorRectRight - colorRectLeft, colorRectBottom - colorRectTop);
+        ctx.restore();
+      }
+
+      const usedLabels = [];
+      function placeLabel(px, py, text) {
+        let labelY = py + 10;
+        while (usedLabels.some(([ux, uy]) => Math.abs(uy - labelY) < 10 && Math.abs(ux - px) < 20)) {
+          labelY += 12;
+        }
+        usedLabels.push([px, labelY]);
+        ctx.fillText(text, px + 4, labelY);
+      }
+      efficiencyData.forEach(d => {
+        const px = xScale(d.sdf);
+        const py = yScale(d.pir);
+        if (canDrawBaseline) {
+          const [fx, fy] = projectPointToLine(px, py, X1, Y1, X2, Y2);
+          const colorLine = (py < fy) ? "green" : "red";
+          ctx.save();
+          ctx.setLineDash([13, 3, 2, 3]);
+          ctx.strokeStyle = colorLine;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(fx, fy);
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.save();
+        ctx.fillStyle = "#1f77b4";
+        ctx.beginPath();
+        ctx.moveTo(px, py + 5);
+        ctx.lineTo(px - 5, py - 4);
+        ctx.lineTo(px + 5, py - 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.font = "14px sans-serif";
+        ctx.fillStyle = "#000";
+        ctx.textAlign = "left";
+        placeLabel(px, py, d.method);
+        ctx.restore();
+      });
     }
-    // y ticks
-    for (let v=0; v<=8; v++) {
-      const y = yScale(v), x0 = xScale(0);
+
+    // -------------------------
+    // Draw Feasibility Plot
+    // -------------------------
+    function drawFeasibilityPlot() {
+      const ctx = setupHiDPICanvas("feasibilityCanvas");
+      const canvas = document.getElementById("feasibilityCanvas");
+      const size = Math.min(canvas.width, canvas.height) / (window.devicePixelRatio || 1);
+      const W = size, H = size;
+      ctx.clearRect(0, 0, W, H);
+      const pad = 60;
+      const minVal = 0;
+      const maxVal = Math.max(
+        Math.max(...feasibilityData.map(d => (typeof d.simplicity === "number" ? d.simplicity : 0))),
+        Math.max(...feasibilityData.map(d => (typeof d.flexibility === "number" ? d.flexibility : 0)))
+      ) + 1;
+      const xScale = v => pad + (v - minVal) / (maxVal - minVal) * (W - 2 * pad);
+      const yScale = v => (H - pad) - (v - minVal) / (maxVal - minVal) * (H - 2 * pad);
+      const usedLabels = [];
+      function placeLabel(px, py, text) {
+        let labelY = py + 14;
+        while (usedLabels.some(([ux, uy]) => Math.abs(uy - labelY) < 10 && Math.abs(ux - px) < 80)) {
+          labelY += 14;
+        }
+        usedLabels.push([px, labelY]);
+        ctx.fillText(text, px + 4, labelY);
+      }
       ctx.beginPath();
-      ctx.moveTo(x0, y);
-      ctx.lineTo(x0-5, y);
+      ctx.moveTo(pad, H - pad);
+      ctx.lineTo(W - pad, H - pad);
+      ctx.moveTo(pad, H - pad);
+      ctx.lineTo(pad, pad);
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.textAlign = "right";
-      ctx.textBaseline = "middle";
-      ctx.fillText(v.toString(), x0-8, y);
+      function drawFeasTicks() {
+        ctx.save();
+        ctx.font = "12px sans-serif";
+        ctx.fillStyle = "#000";
+        for (let v = minVal; v <= maxVal; v++) {
+          const x = xScale(v), y0 = yScale(0);
+          ctx.beginPath();
+          ctx.moveTo(x, y0);
+          ctx.lineTo(x, y0 + 5);
+          ctx.stroke();
+          ctx.fillText(v.toString(), x, y0 + 15);
+          const y = yScale(v), x0 = xScale(0);
+          ctx.beginPath();
+          ctx.moveTo(x0, y);
+          ctx.lineTo(x0 - 5, y);
+          ctx.stroke();
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          ctx.fillText(v.toString(), x0 - 8, y);
+        }
+        ctx.restore();
+      }
+      drawFeasTicks();
+      ctx.save();
+      ctx.fillStyle = "#000";
+      ctx.font = "16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Simplicity Rank", W / 2, H - 20);
+      ctx.translate(20, H / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("Flexibility Rank", 0, 0);
+      ctx.restore();
+      const x0 = xScale(minVal), y0 = yScale(minVal);
+      const xMax = xScale(maxVal - 0.5), yMax = yScale(maxVal - 0.5);
+      ctx.save();
+      ctx.strokeStyle = "orange";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(xMax, yMax);
+      ctx.stroke();
+      ctx.restore();
+      feasibilityData.forEach(d => {
+        if (typeof d.simplicity !== "number" || typeof d.flexibility !== "number") return;
+        const sx = xScale(d.simplicity);
+        const sy = yScale(d.flexibility);
+        const [px, py] = projectPointToLine(sx, sy, x0, y0, xMax, yMax);
+        ctx.save();
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = "green";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(px, py);
+        ctx.stroke();
+        ctx.restore();
+        ctx.save();
+        ctx.strokeStyle = "#1f77b4";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 5, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.restore();
+        ctx.save();
+        ctx.fillStyle = "green";
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.font = "14px sans-serif";
+        ctx.fillStyle = "#000";
+        ctx.textAlign = "left";
+        ctx.fillText(d.feasibility, px - 10, py - 6);
+        ctx.restore();
+        ctx.save();
+        ctx.font = "14px sans-serif";
+        ctx.fillStyle = "#000";
+        ctx.textAlign = "left";
+        placeLabel(sx, sy, d.method);
+        ctx.restore();
+      });
     }
-    ctx.restore();
-  }
-  drawFeasTicks();
 
-  // Axis labels
-  ctx.save();
-  ctx.fillStyle = "#000";
-  ctx.font = "16px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Simplicity Rank", W/2, H-20);
-  // y label
-  ctx.translate(20, H/2);
-  ctx.rotate(-Math.PI/2);
-  ctx.fillText("Flexibility Rank", 0, 0);
-  ctx.restore();
+    // ===============================================================
+    // Master update and Save functions
+    // ===============================================================
+    function updateAll() {
+      populateEfficiencyTable();
+      addNewFeasibilityRow();
+      populateFeasibilityTable();
+      drawEfficiencyPlot();
+      drawFeasibilityPlot();
+    }
 
-  // The diagonal from (0,0)->(8,8)
-  const x0 = xScale(0), y0 = yScale(0);
-  const x8 = xScale(8), y8 = yScale(8);
-  ctx.save();
-  ctx.strokeStyle = "orange";
-  ctx.lineWidth = 3;
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.moveTo(x0, y0);
-  ctx.lineTo(x8, y8);
-  ctx.stroke();
-  ctx.restore();
+    function saveDataAndPlots() {
+      const dataObj = { efficiencyData, feasibilityData };
+      const dataStr = JSON.stringify(dataObj, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "leaderboard_data.json";
+      link.click();
+      URL.revokeObjectURL(url);
+      function downloadCanvas(id, filename) {
+        const c = document.getElementById(id);
+        const a = document.createElement("a");
+        a.href = c.toDataURL("image/png");
+        a.download = filename;
+        a.click();
+      }
+      downloadCanvas("efficiencyCanvas", "efficiency_plot.png");
+      downloadCanvas("feasibilityCanvas", "feasibility_plot.png");
+    }
 
-  // We'll rank the methods by sum = simplicity+flexibility
-  // Then place them along the diagonal in ascending order.
-  const items = feasibilityData.map(d => ({
-    ...d,
-    sumSF: d.simplicity + d.flexibility
-  }));
-  items.sort((a,b) => a.sumSF - b.sumSF);
-
-  // We'll have rank i from 1..N
-  // We place them along the diagonal from param t=0..1. E.g. t= (i-1)/(N-1).
-  const N = items.length;
-  items.forEach((item, i) => {
-    const rank = i + 1;
-    item.rank = rank; // store rank
-    const t = (i)/(N-1);
-    item.rankX = xScale(0 + (8)*t);
-    item.rankY = yScale(0 + (8)*t);
-  });
-
-  // Now draw each method: a blue circle at (simp, flex),
-  // then perpendicular line to the diagonal, then a green circle at the rank point
-  // with rank label
-  items.forEach(d => {
-    const sx = xScale(d.simplicity);
-    const sy = yScale(d.flexibility);
-
-    // Project (sx, sy) onto line from (x0,y0)->(x8,y8)
-    const [px, py] = projectPointToLine(sx, sy, x0, y0, x8, y8);
-
-    // dashed green line from (sx, sy) => (px, py)
-    ctx.save();
-    ctx.setLineDash([3,3]);
-    ctx.strokeStyle = "green";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(sx, sy);
-    ctx.lineTo(px, py);
-    ctx.stroke();
-    ctx.restore();
-
-    // draw method's circle (blue)
-    ctx.save();
-    ctx.fillStyle = "#1f77b4";
-    ctx.beginPath();
-    ctx.arc(sx, sy, 5, 0, 2*Math.PI);
-    ctx.fill();
-    ctx.restore();
-
-    // label the method
-    ctx.save();
-    ctx.font = "14px sans-serif";
-    ctx.fillStyle = "#000";
-    ctx.textAlign = "left";
-    ctx.fillText(d.method, sx+6, sy+4);
-    ctx.restore();
-  });
-
-  // Next, draw the rank circles at (rankX, rankY)
-  items.forEach(d => {
-    // draw green circle
-    ctx.save();
-    ctx.fillStyle = "green";
-    ctx.beginPath();
-    ctx.arc(d.rankX, d.rankY, 5, 0, 2*Math.PI);
-    ctx.fill();
-
-    // rank text
-    ctx.font = "14px sans-serif";
-    ctx.fillStyle = "#000";
-    ctx.textAlign = "left";
-    ctx.fillText(d.rank, d.rankX + 8, d.rankY + 4);
-    ctx.restore();
-  });
-}
-
-// ====================================================================
-// Master update
-// ====================================================================
-function updateAll() {
-  addNewRows();
-  populateTables();
-  drawEfficiencyPlot();
-  drawFeasibilityPlot();
-}
-
-// ====================================================================
-// Save data & plots
-// ====================================================================
-function saveDataAndPlots() {
-  // 1) Data as JSON
-  const dataObj = { efficiencyData, feasibilityData };
-  const dataStr = JSON.stringify(dataObj, null, 2);
-  const blob = new Blob([dataStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "leaderboard_data.json";
-  link.click();
-  URL.revokeObjectURL(url);
-
-  // 2) Save the plots
-  function downloadCanvas(id, filename) {
-    const c = document.getElementById(id);
-    const a = document.createElement("a");
-    a.href = c.toDataURL("image/png");
-    a.download = filename;
-    a.click();
-  }
-  downloadCanvas("efficiencyCanvas", "efficiency_plot.png");
-  downloadCanvas("feasibilityCanvas", "feasibility_plot.png");
-}
-
-// ====================================================================
-// On load
-// ====================================================================
-window.onload = () => {
-  populateTables();
-  drawEfficiencyPlot();
-  drawFeasibilityPlot();
-  document.getElementById("updateBtn").addEventListener("click", updateAll);
-  document.getElementById("saveBtn").addEventListener("click", saveDataAndPlots);
-};
-</script>
-
+    window.onload = () => {
+      populateEfficiencyTable();
+      populateFeasibilityTable();
+      drawEfficiencyPlot();
+      drawFeasibilityPlot();
+      document.getElementById("updateBtn").addEventListener("click", updateAll);
+      document.getElementById("saveBtn").addEventListener("click", saveDataAndPlots);
+    };
+  </script>
 </body>
 </html>

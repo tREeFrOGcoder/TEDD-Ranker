@@ -24,7 +24,7 @@ def transform(same_bench_pir=0, oth_bench_pir=0):
     
 
 """
-type: a string choose from ["same_win", "same_bench", "other_bench"]. Corresponding to the four settings provided (There is no operation for the category: "other_win", becasue it is neither commond nor useful)
+type: a string choose from ["same_win", "same_bench", "other_bench"]. Corresponding to the four settings provided (There is no operation for the category: "other_win", becasue it is neither common nor useful)
 SEM: a list that contain the win-tie-loss or benchmark score of each SEM under different settings
 BM: a list that contain the win-tie-loss or benchmark score of each BM under different settings
 pir: a list that contain the PIR under different settings
@@ -47,9 +47,10 @@ def getPIR(type:str, SEM:list = None, BM:list = None, pir:list = None):
             PIR = transform(same_bench_pir=pir)
         if type == "other_bench":
             PIR = transform(oth_bench_pir=pir)
+    print(PIR)
     return PIR
     
 # some examples:
-getPIR(SEM=[1.2, 3], BM=[1,4], type = "same_win")
-getPIR(SEM=[1.2, 3], BM=[3], type = "same_win")
-getPIR(SEM=[1.2, 3], BM=[1,4], type = "same_bench")
+getPIR(SEM=[1.2, 3], BM=[4], type = "same_win")
+# getPIR(SEM=[1.2, 3], BM=[3], type = "same_win")
+# getPIR(SEM=[1.2, 3], BM=[1,4], type = "same_bench")
