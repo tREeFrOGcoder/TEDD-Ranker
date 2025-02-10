@@ -51,6 +51,6 @@ def getPIR(type:str, SEM:list = None, BM:list = None, pir:list = None):
     return PIR
     
 # some examples:
-getPIR(SEM=[1.2, 3], BM=[4], type = "same_win")
+getPIR(SEM=[1.2, 3], BM=[1.2], type = "same_win")
 # getPIR(SEM=[1.2, 3], BM=[3], type = "same_win")
 # getPIR(SEM=[1.2, 3], BM=[1,4], type = "same_bench")

@@ -233,15 +233,28 @@
       
       const pirValue = getPIR(pirType, SEM, BM);
       // Overwrite the global array with new computed values.
-      efficiencyData = [];
-      for (let i = 0; i < SEM.length; i++) {
-        const methodName = methods[i] ? methods[i] : "Method " + (i + 1);
-        efficiencyData.push({
-          method: methodName,
-          sdf: SDF[i],
-          pir: pirValue
-        });
-      }
+      // Correct: append new rows without wiping out the existing data
+    // Append new rows without wiping out the existing data.
+    const initialLength = efficiencyData.length;
+    for (let i = 0; i < SEM.length; i++) {
+    const methodName = methods[i] ? methods[i] : "Method " + (initialLength + i + 1);
+    efficiencyData.push({
+        method: methodName,
+        sdf: SDF[i],
+        pir: pirValue
+    });
+    }
+
+    // Append only the newly added rows to the table.
+    efficiencyData.slice(initialLength).forEach(d => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${d.method}</td>
+                    <td>${d.sdf}</td>
+                    <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>`;
+    effTbody.appendChild(tr);
+    });
+
+
       
       efficiencyData.forEach(d => {
         const tr = document.createElement("tr");
@@ -487,36 +500,42 @@
       return [x1 + t * ABx, y1 + t * ABy];
     }
 
-    function drawAxisTicks(ctx, minVal, maxVal, step, scaleFunc, axis = "x") {
-      ctx.save();
-      ctx.fillStyle = "#000";
-      ctx.font = "12px sans-serif";
-      ctx.textAlign = axis === "x" ? "center" : "right";
-      let v = minVal;
-      while (v <= maxVal + 1e-9) {
-        const valStr = (Math.abs(v) < 1e-6) ? "0" : v.toFixed(2).replace(/\.?0+$/, "");
-        if (axis === "x") {
-          const x = scaleFunc(v);
-          const y0 = scaleFunc(minVal);
-          ctx.beginPath();
-          ctx.moveTo(x, y0);
-          ctx.lineTo(x, y0 + 5);
-          ctx.stroke();
-          ctx.fillText(valStr, x, y0 + 15);
-        } else {
-          const y = scaleFunc(v);
-          const x0 = scaleFunc(minVal);
-          ctx.beginPath();
-          ctx.moveTo(x0, y);
-          ctx.lineTo(x0 - 5, y);
-          ctx.stroke();
-          ctx.textBaseline = "middle";
-          ctx.fillText(valStr, x0 - 8, y);
+    function drawAxisTicks(ctx, minVal, maxVal, step, scaleFunc, constantFunc, axis = "x") {
+        ctx.save();
+        ctx.fillStyle = "#000";
+        ctx.font = "12px sans-serif";
+        let v = minVal;
+        while (v <= maxVal + 1e-9) {
+            const valStr = (Math.abs(v) < 1e-6) ? "0" : v.toFixed(2).replace(/\.?0+$/, "");
+            if (axis === "x") {
+            // X-axis ticks: use the constant function to get the y coordinate (always H - pad)
+            const x = scaleFunc(v);
+            const y0 = constantFunc();
+            ctx.beginPath();
+            ctx.moveTo(x, y0);
+            ctx.lineTo(x, y0 + 5);
+            ctx.stroke();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+            ctx.fillText(valStr, x, y0 + 5);
+            } else {
+            // Y-axis ticks: rotate the text so it fits.
+            const y = scaleFunc(v);
+            const x0 = constantFunc();
+            ctx.save();
+            ctx.translate(x0 - 8, y);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = "right";
+            ctx.textBaseline = "middle";
+            ctx.fillText(valStr, 0, 0);
+            ctx.restore();
+            }
+            v += step;
         }
-        v += step;
-      }
-      ctx.restore();
-    }
+        ctx.restore();
+        }
+
+
 
     // -------------------------
     // Draw Efficiency Plot
@@ -553,8 +572,45 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      drawAxisTicks(ctx, minSDF, maxSDF, 0.05, xScale, "x");
-      drawAxisTicks(ctx, minPIR, maxPIR, 0.1, yScale, "y");
+      // Draw X-axis ticks for Efficiency Plot (for SDF)
+        ctx.save();
+        ctx.font = "12px sans-serif";
+        ctx.fillStyle = "#000";
+        for (let v = minSDF; v <= maxSDF; v += 0.05) {
+        // Use the y-position corresponding to the lower bound of PIR.
+        // (In the feasibility plot, we use yScale(0) because minVal=0;
+        // here use yScale(minPIR) since that is the lower bound for PIR.)
+        const x = xScale(v);
+        const y0 = yScale(minPIR);
+        ctx.beginPath();
+        ctx.moveTo(x, y0);
+        ctx.lineTo(x, y0 + 5);
+        ctx.stroke();
+        // Mark the tick value (formatted as needed)
+        ctx.fillText(v.toFixed(2).replace(/\.?0+$/, ""), x, y0 + 15);
+        }
+        ctx.restore();
+
+        // Draw Y-axis ticks for Efficiency Plot (for PIR)
+        ctx.save();
+        ctx.font = "12px sans-serif";
+        ctx.fillStyle = "#000";
+        for (let v = minPIR; v <= maxPIR; v += 0.1) {
+        // Use the x-position corresponding to the lower bound of SDF.
+        const y = yScale(v);
+        const x0 = xScale(minSDF);
+        ctx.beginPath();
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x0 - 5, y);
+        ctx.stroke();
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.fillText(v.toFixed(2).replace(/\.?0+$/, ""), x0 - 8, y);
+        }
+        ctx.restore();
+
+
+
 
       ctx.save();
       ctx.fillStyle = "#000";

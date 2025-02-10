@@ -94,7 +94,11 @@ h2 {
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
 }
+
 
 .half {
   flex: 1;
