@@ -449,8 +449,8 @@ function drawEfficiencyPlot() {
   // Data range
   const minSDF = 0.0;
   const maxSDF = Math.max(...efficiencyData.map(d => d.sdf), 0.2) * 1.05;
-  const minPIR = 1.28;
-  const maxPIR = Math.max(...efficiencyData.map(d => d.pir), 1.75) * 1.05;
+  const minPIR = 1.24;  // slightly less than 1.28 to allow padding
+  const maxPIR = Math.max(...efficiencyData.map(d => d.pir), 1.75) * 1.05 + 0.01;
 
   // Scales
   const xScale = val =>
@@ -546,42 +546,43 @@ function drawEfficiencyPlot() {
 
   // === Draw the extended dashed baseline (clipped to colorRectLeft..Right) ===
   ctx.save();
-  ctx.setLineDash([6, 4]);
+  ctx.setLineDash([13, 5]);
   ctx.strokeStyle = "orange";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 3.5;
   ctx.beginPath();
   ctx.moveTo(X1, Y1);
   ctx.lineTo(X2, Y2);
   ctx.stroke();
   ctx.restore();
 
-  // Add a small legend
-  ctx.save();
-  ctx.font = "14px sans-serif";
-  ctx.fillStyle = "#000";
-  const legendX = W - 140, legendY = pad + 10;
-  ctx.fillText("Work", legendX + 35, legendY + 5);
-  ctx.beginPath();
-  ctx.fillStyle = "#1f77b4";
-  ctx.moveTo(legendX + 15, legendY);
-  ctx.lineTo(legendX + 10, legendY + 10);
-  ctx.lineTo(legendX + 20, legendY + 10);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
+//   // Add a small legend
+//   ctx.save();
+//   ctx.font = "14px sans-serif";
+//   ctx.fillStyle = "#000";
+//   const legendX = W - 140, legendY = pad + 10;
+//   ctx.fillText("Work", legendX + 35, legendY + 5);
+//   ctx.beginPath();
+//   ctx.fillStyle = "#1f77b4";
+//   ctx.moveTo(legendX + 15, legendY);
+//   ctx.lineTo(legendX + 10, legendY + 10);
+//   ctx.lineTo(legendX + 20, legendY + 10);
+//   ctx.closePath();
+//   ctx.fill();
+//   ctx.restore();
 
   // === Collision-avoidance for labels ===
   const usedLabelYs = [];
   function placeLabel(px, py, text) {
-    let labelY = py - 6;
-    // If it conflicts, shift down
-    while (usedLabelYs.some(y => Math.abs(y - labelY) < 14)) {
-      labelY += 14;
-    }
+        let labelY = py - 4;
+        // If it conflicts, shift down
+        while (usedLabelYs.some(y => Math.abs(y - labelY) < 10)) {
+        labelY += 10;
+        }
     usedLabelYs.push(labelY);
     ctx.fillText(text, px + 6, labelY);
   }
 
+  
   // === Plot each data point ===
   efficiencyData.forEach(d => {
     const px = xScale(d.sdf);
@@ -595,9 +596,9 @@ function drawEfficiencyPlot() {
 
     // dashed projection
     ctx.save();
-    ctx.setLineDash([3,3]);
+    ctx.setLineDash([13, 3, 2, 3]);
     ctx.strokeStyle = colorLine;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(px, py);
     ctx.lineTo(fx, fy);
@@ -608,12 +609,14 @@ function drawEfficiencyPlot() {
     ctx.save();
     ctx.fillStyle = "#1f77b4";
     ctx.beginPath();
-    ctx.moveTo(px, py - 5);
-    ctx.lineTo(px - 5, py + 4);
-    ctx.lineTo(px + 5, py + 4);
+    ctx.moveTo(px,   py + 5);
+    ctx.lineTo(px-5, py - 4);
+    ctx.lineTo(px+5, py - 4);
     ctx.closePath();
     ctx.fill();
     ctx.restore();
+
+
 
     // place label with collision avoidance
     ctx.save();
