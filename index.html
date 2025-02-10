@@ -355,26 +355,35 @@ function addNewRows() {
 }
 
 // ====================================================================
-// High-DPI Canvas Setup
+// High-DPI Canvas Setup -- always use the intrinsic size
 // ====================================================================
+// outside the function:
+let originalWidth, originalHeight;
+let didStoreOriginal = false;
+
 function setupHiDPICanvas(canvasId) {
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext("2d");
-
-  // Save original size
-  const width = canvas.width;
-  const height = canvas.height;
-  // Scale by devicePixelRatio
   const dpr = window.devicePixelRatio || 1;
-  if (dpr !== 1) {
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = width + "px";
-    canvas.style.height = height + "px";
-    ctx.scale(dpr, dpr);
+
+  if (!didStoreOriginal) {
+    // store the initial .width & .height
+    originalWidth = canvas.width;
+    originalHeight = canvas.height;
+    didStoreOriginal = true;
   }
+
+  // revert to the original unscaled size * dpr
+  canvas.width = originalWidth * dpr;
+  canvas.height = originalHeight * dpr;
+  canvas.style.width = originalWidth + "px";
+  canvas.style.height = originalHeight + "px";
+  ctx.scale(dpr, dpr);
+
   return ctx;
 }
+
+
 
 // ====================================================================
 // Utility: Project point P onto line AB perpendicularly
@@ -437,29 +446,52 @@ function drawAxisTicks(ctx, minVal, maxVal, step, xScale, yScale, axis="x") {
 // ====================================================================
 // Draw Efficiency Plot
 // ====================================================================
+// ====================================================================
+// Draw Efficiency Plot (Updated to handle new data safely)
+// ====================================================================
 function drawEfficiencyPlot() {
   const ctx = setupHiDPICanvas("efficiencyCanvas");
   const canvas = document.getElementById("efficiencyCanvas");
-  const W = canvas.width / (window.devicePixelRatio || 1);
-  const H = canvas.height / (window.devicePixelRatio || 1);
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.width / dpr;
+  const H = canvas.height / dpr;
   ctx.clearRect(0, 0, W, H);
 
   const pad = 60;
+  const innerPad = 20;  // for the colored rect
 
-  // Data range
-  const minSDF = 0.0;
-  const maxSDF = Math.max(...efficiencyData.map(d => d.sdf), 0.2) * 1.05;
-  const minPIR = 1.24;  // slightly less than 1.28 to allow padding
-  const maxPIR = Math.max(...efficiencyData.map(d => d.pir), 1.75) * 1.05 + 0.01;
+  // -- 1) Determine SDF & PIR ranges dynamically but keep a floor of 0.0 on SDF
+  //       and keep your same general bounding style for PIR.
+  // <--- added/changed below:
+  const minSDFdata = Math.min(...efficiencyData.map(d => d.sdf));
+  const maxSDFdata = Math.max(...efficiencyData.map(d => d.sdf));
+  const minSDF = Math.min(0.0, minSDFdata);  // clamp to 0 if data is > 0
+  // Expand the max to give some padding (like your *1.05).
+  const maxSDF = (maxSDFdata > 0.2 ? maxSDFdata : 0.2) * 1.05;  
 
-  // Scales
+  // For PIR, do not hard‐code 1.24 if you want to let new data go below it.
+  // But keep your top expansion style. If you *must* not go below ~1.24, you can do so.
+  const minPIRdata = Math.min(...efficiencyData.map(d => d.pir));
+  const maxPIRdata = Math.max(...efficiencyData.map(d => d.pir));
+  const minPIR = minPIRdata * 0.95; // or just do (minPIRdata - 0.05) etc.
+  const maxPIR = (maxPIRdata > 1.75 ? maxPIRdata : 1.75) * 1.05 + 0.01;
+
+  // Safety check to ensure min < max:
+  const pirRange = maxPIR - minPIR;
+  if (pirRange < 1e-9) {
+    // If all PIRs are basically the same value, artificially expand
+    // to avoid division by zero or basically an empty scale:
+    maxPIR = minPIR + 0.1;
+  }
+
+  // -- 2) Build scaling functions
   const xScale = val =>
     pad + ((val - minSDF) / (maxSDF - minSDF)) * (W - 2 * pad);
 
   const yScale = val =>
     (H - pad) - ((val - minPIR) / (maxPIR - minPIR)) * (H - 2 * pad);
 
-  // Draw axes
+  // -- 3) Draw axes
   ctx.beginPath();
   // X axis
   ctx.moveTo(pad, H - pad);
@@ -471,144 +503,214 @@ function drawEfficiencyPlot() {
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Axis ticks
-  const xStep = 0.05;
-  drawAxisTicks(ctx, 0.0, maxSDF, xStep, xScale, _ => H - pad, "x");
-  const yStep = 0.1;
-  drawAxisTicks(ctx, minPIR, maxPIR, yStep, _ => pad, yScale, "y");
+  // -- 4) Axis Ticks
+  function drawAxisTicks(ctx, minVal, maxVal, step, xScale, yScale, axis="x") {
+    ctx.save();
+    ctx.fillStyle = "#000";
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = (axis === "x" ? "center" : "right");
+    
+    let v = minVal;
+    while (v <= maxVal + 1e-9) {
+      const valStr = (Math.abs(v) < 1e-6) ? "0" : v.toFixed(2).replace(/\.?0+$/,"");
+      if (axis === "x") {
+        const x = xScale(v);
+        const y0 = yScale(minVal);
+        ctx.beginPath();
+        ctx.moveTo(x, y0);
+        ctx.lineTo(x, y0 + 5);
+        ctx.stroke();
+        ctx.fillText(valStr, x, y0 + 15);
+      } else {
+        const y = yScale(v);
+        const x0 = xScale(minVal);
+        ctx.beginPath();
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x0 - 5, y);
+        ctx.stroke();
+        ctx.textBaseline = "middle";
+        ctx.fillText(valStr, x0 - 8, y);
+      }
+      v += step;
+    }
+    ctx.restore();
+  }
 
-  // Axis labels
+  // X: from minSDF to maxSDF in steps
+  //    If your data is mostly around 0.0..0.2, you might pick 0.05 steps
+  const xStep = 0.05;
+  drawAxisTicks(ctx, minSDF, maxSDF, xStep, xScale, v => H - pad, "x");
+
+  // Y: from minPIR to maxPIR in ~0.1 steps
+  //    Or adapt a step = pirRange / 10 or so
+  const yStep = 0.1;
+  drawAxisTicks(ctx, minPIR, maxPIR, yStep, v => pad, yScale, "y");
+
+  // -- 5) Axis labels
+  ctx.save();
   ctx.fillStyle = "#000";
   ctx.font = "16px sans-serif";
-  ctx.textAlign = "center";
   // X label
+  ctx.textAlign = "center";
   ctx.fillText("Selected Dataset Fraction (SDF)", W / 2, H - 20);
   // Y label
-  ctx.save();
   ctx.translate(20, H / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.fillText("Performance Improvement Ratio (PIR)", 0, 0);
   ctx.restore();
 
-  // Identify baseline points (Instruction-Mining & InstructionGPT-4)
+  // -- 6) Identify baseline points (Instruction‐Mining & InstructionGPT‐4)
+  // If either is missing, or they end up identical, just skip the shading part.
+  // <--- added/changed fallback logic below:
   const A = efficiencyData.find(d => d.method === "Instruction-Mining");
   const B = efficiencyData.find(d => d.method === "InstructionGPT-4");
-  if (!A || !B) return; // fallback if not found
 
-  // For slope, line is (A.sdf,A.pir)->(B.sdf,B.pir)
-  const slope = (B.pir - A.pir) / (B.sdf - A.sdf);
+  let canDrawBaseline = (A && B);
 
-  // Extra inner padding for the colored rectangle
-  const innerPad = 20;
-  const colorRectLeft   = pad + innerPad;
-  const colorRectRight  = W - pad - innerPad;
-  const colorRectTop    = pad + innerPad;
-  const colorRectBottom = H - pad - innerPad;
+  if (canDrawBaseline) {
+    // Check if they are effectively the same point (avoid slope=Infinity or 0/0):
+    const dx = B.sdf - A.sdf;
+    const dy = B.pir - A.pir;
+    if (Math.abs(dx) < 1e-12) {
+      // They have ~the same SDF, so slope would blow up. We'll skip shading.
+      canDrawBaseline = false;
+    }
+  }
 
-  // === Fill upper rectangle #e8fff7 ===
-  ctx.save();
-  ctx.fillStyle = "#e8fff7";
-  ctx.fillRect(
-    colorRectLeft,
-    colorRectTop,
-    colorRectRight - colorRectLeft,
-    colorRectBottom - colorRectTop
-  );
-  ctx.restore();
+  // We'll define variables for the line only if canDrawBaseline is true:
+  let X1, Y1, X2, Y2; // extended baseline coords in pixel space
 
-  // ---- Modified Part: Baseline extended but clipped to colorRectLeft..Right ----
-  // 1) Convert 'pixel X' back to data SDF for left & right edges of colored rect
-  const leftSDF = minSDF + ( (colorRectLeft - pad)/(W - 2*pad ) ) * (maxSDF - minSDF);
-  const rightSDF= minSDF + ( (colorRectRight- pad)/(W - 2*pad ) ) * (maxSDF - minSDF);
+  if (canDrawBaseline) {
+    // The slope
+    const slope = (B.pir - A.pir) / (B.sdf - A.sdf);
 
-  // 2) Evaluate the line's PIR at these "clipped" SDF values
-  const yAtLeft  = A.pir + slope * (leftSDF  - A.sdf);
-  const yAtRight = A.pir + slope * (rightSDF - A.sdf);
+    // The colored region “rectangle” boundaries in pixel space:
+    const colorRectLeft   = pad + innerPad;
+    const colorRectRight  = W - pad - innerPad;
+    const colorRectTop    = pad + innerPad;
+    const colorRectBottom = H - pad - innerPad;
 
-  // 3) Map them to pixel coords
-  const X1 = colorRectLeft;
-  const Y1 = yScale(yAtLeft);
-  const X2 = colorRectRight;
-  const Y2 = yScale(yAtRight);
+    // Convert colorRectLeft..Right from pixel->data for SDF
+    const leftSDF  = minSDF + ((colorRectLeft  - pad) / (W - 2*pad))*(maxSDF - minSDF);
+    const rightSDF = minSDF + ((colorRectRight - pad) / (W - 2*pad))*(maxSDF - minSDF);
 
-  // === Fill below baseline with #f6dfdf (within the same rectangle) ===
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(X1, Y1);
-  ctx.lineTo(X2, Y2);
-  // Then down to the bottom of the rectangle
-  ctx.lineTo(X2, colorRectBottom);
-  ctx.lineTo(X1, colorRectBottom);
-  ctx.closePath();
-  ctx.fillStyle = "#f6dfdf";
-  ctx.fill();
-  ctx.restore();
+    // Evaluate the line's PIR at leftSDF and rightSDF
+    const yAtLeft  = A.pir + slope * (leftSDF  - A.sdf);
+    const yAtRight = A.pir + slope * (rightSDF - A.sdf);
 
-  // === Draw the extended dashed baseline (clipped to colorRectLeft..Right) ===
-  ctx.save();
-  ctx.setLineDash([13, 5]);
-  ctx.strokeStyle = "orange";
-  ctx.lineWidth = 3.5;
-  ctx.beginPath();
-  ctx.moveTo(X1, Y1);
-  ctx.lineTo(X2, Y2);
-  ctx.stroke();
-  ctx.restore();
+    // Map them to pixel coords
+    X1 = colorRectLeft;
+    Y1 = yScale(yAtLeft);
+    X2 = colorRectRight;
+    Y2 = yScale(yAtRight);
 
-//   // Add a small legend
-//   ctx.save();
-//   ctx.font = "14px sans-serif";
-//   ctx.fillStyle = "#000";
-//   const legendX = W - 140, legendY = pad + 10;
-//   ctx.fillText("Work", legendX + 35, legendY + 5);
-//   ctx.beginPath();
-//   ctx.fillStyle = "#1f77b4";
-//   ctx.moveTo(legendX + 15, legendY);
-//   ctx.lineTo(legendX + 10, legendY + 10);
-//   ctx.lineTo(legendX + 20, legendY + 10);
-//   ctx.closePath();
-//   ctx.fill();
-//   ctx.restore();
+    // Fill entire rectangle with #e8fff7
+    ctx.save();
+    ctx.fillStyle = "#e8fff7";
+    ctx.fillRect(
+      colorRectLeft,
+      colorRectTop,
+      colorRectRight - colorRectLeft,
+      colorRectBottom - colorRectTop
+    );
+    ctx.restore();
 
-  // === Collision-avoidance for labels ===
+    // Fill below baseline with #f6dfdf
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(X1, Y1);
+    ctx.lineTo(X2, Y2);
+    ctx.lineTo(X2, colorRectBottom);
+    ctx.lineTo(X1, colorRectBottom);
+    ctx.closePath();
+    ctx.fillStyle = "#f6dfdf";
+    ctx.fill();
+    ctx.restore();
+
+    // Draw the extended dashed baseline
+    ctx.save();
+    ctx.setLineDash([13, 5]);
+    ctx.strokeStyle = "orange";
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(X1, Y1);
+    ctx.lineTo(X2, Y2);
+    ctx.stroke();
+    ctx.restore();
+  } else {
+    // If missing or identical, optionally fill the entire background or do nothing
+    // For demonstration, we'll fill the whole area with #e8fff7, no #f6dfdf:
+    ctx.save();
+    const colorRectLeft   = pad + innerPad;
+    const colorRectRight  = W - pad - innerPad;
+    const colorRectTop    = pad + innerPad;
+    const colorRectBottom = H - pad - innerPad;
+    ctx.fillStyle = "#e8fff7";
+    ctx.fillRect(
+      colorRectLeft,
+      colorRectTop,
+      colorRectRight - colorRectLeft,
+      colorRectBottom - colorRectTop
+    );
+    ctx.restore();
+  }
+
+  // -- 7) Utility to project a point perpendicularly onto the baseline line
+  // <--- same as your existing code
+  function projectPointToLine(px, py, x1, y1, x2, y2) {
+    const ABx = x2 - x1;
+    const ABy = y2 - y1;
+    const APx = px - x1;
+    const APy = py - y1;
+    const ab2 = ABx*ABx + ABy*ABy;
+    if (ab2 < 1e-10) {
+      // line degenerate
+      return [x1, y1];
+    }
+    const t = (APx*ABx + APy*ABy) / ab2;
+    return [x1 + t*ABx, y1 + t*ABy];
+  }
+
+  // -- 8) Collision‐avoidance for text labels
   const usedLabelYs = [];
   function placeLabel(px, py, text) {
-        let labelY = py - 4;
-        // If it conflicts, shift down
-        while (usedLabelYs.some(y => Math.abs(y - labelY) < 10)) {
-        labelY += 10;
-        }
+    let labelY = py - 4;
+    while (usedLabelYs.some(y => Math.abs(y - labelY) < 10)) {
+      labelY += 10;
+    }
     usedLabelYs.push(labelY);
     ctx.fillText(text, px + 6, labelY);
   }
 
-  
-  // === Plot each data point ===
+  // -- 9) Plot each data point
   efficiencyData.forEach(d => {
+    // (a) Convert to pixel
     const px = xScale(d.sdf);
     const py = yScale(d.pir);
 
-    // Perp projection onto the line (X1,Y1)->(X2,Y2)
-    const [fx, fy] = projectPointToLine(px, py, X1, Y1, X2, Y2);
+    // (b) If we have a valid baseline, project onto that line
+    if (canDrawBaseline) {
+      const [fx, fy] = projectPointToLine(px, py, X1, Y1, X2, Y2);
+      // color line: green if above, red if below
+      const colorLine = (py < fy) ? "green" : "red";
 
-    // color line: green if above, red if below
-    const colorLine = (py < fy) ? "green" : "red";
+      // dashed projection
+      ctx.save();
+      ctx.setLineDash([13, 3, 2, 3]);
+      ctx.strokeStyle = colorLine;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(fx, fy);
+      ctx.stroke();
+      ctx.restore();
+    }
 
-    // dashed projection
-    ctx.save();
-    ctx.setLineDash([13, 3, 2, 3]);
-    ctx.strokeStyle = colorLine;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(px, py);
-    ctx.lineTo(fx, fy);
-    ctx.stroke();
-    ctx.restore();
-
-    // blue triangle for the point
+    // (c) Draw the marker
     ctx.save();
     ctx.fillStyle = "#1f77b4";
     ctx.beginPath();
+    // Triangle shape as in your original
     ctx.moveTo(px,   py + 5);
     ctx.lineTo(px-5, py - 4);
     ctx.lineTo(px+5, py - 4);
@@ -616,9 +718,7 @@ function drawEfficiencyPlot() {
     ctx.fill();
     ctx.restore();
 
-
-
-    // place label with collision avoidance
+    // (d) Label
     ctx.save();
     ctx.font = "14px sans-serif";
     ctx.fillStyle = "#000";
@@ -627,6 +727,7 @@ function drawEfficiencyPlot() {
     ctx.restore();
   });
 }
+
 
 
 
