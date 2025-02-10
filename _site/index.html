@@ -672,15 +672,21 @@ function drawEfficiencyPlot() {
   }
 
   // -- 8) Collision‐avoidance for text labels
-  const usedLabelYs = [];
+  const usedLabels = []; // Store (x, y) pairs
   function placeLabel(px, py, text) {
-    let labelY = py - 4;
-    while (usedLabelYs.some(y => Math.abs(y - labelY) < 10)) {
-      labelY += 10;
+    let labelY = py + 10;  // Start slightly above the point
+
+    while (usedLabels.some(([ux, uy]) => 
+        Math.abs(uy - labelY) < 10 && Math.abs(ux - px) < 20)) {  
+      // Check both y and x distances
+      
+      labelY += 12; 
     }
-    usedLabelYs.push(labelY);
-    ctx.fillText(text, px + 6, labelY);
+
+    usedLabels.push([px, labelY]); // Store both x and y
+    ctx.fillText(text, px + 4, labelY);
   }
+
 
   // -- 9) Plot each data point
   efficiencyData.forEach(d => {
