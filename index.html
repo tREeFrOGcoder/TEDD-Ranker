@@ -75,8 +75,9 @@
             <thead>
               <tr>
                 <th>Method</th>
-                <th>Selected Dataset Fraction (SDF)</th>
+                
                 <th>Performance Improvement Ratio (PIR)</th>
+                <th>Selected Dataset Fraction (SDF)</th>
                 <th>Actions</th> <!-- NEW column for delete buttons -->
               </tr>
             </thead>
@@ -188,6 +189,9 @@
       { method: "CaR", sdf: 0.0196, pir: 1.343 },
       { method: "SelectIT", sdf: 0.2, pir: 1.653 }
     ];
+    // --- NEW: assign a global order to each work for tie-breaking ---
+    let nextEfficiencyOrder = 1;
+    efficiencyData.forEach(d => { d.order = nextEfficiencyOrder++; });
 
     function linearTransform(x, x_vals, y_vals) {
       let x1 = x_vals[0], x2 = x_vals[1];
@@ -268,14 +272,81 @@
     document.getElementById("BM").addEventListener("input", updateEfficiencyInputStates);
     document.getElementById("PIR").addEventListener("input", updateEfficiencyInputStates);
 
+    // --- NEW: Function to compute signed efficiency values and sort the efficiencyData array ---
+    function sortEfficiencyData() {
+      const canvas = document.getElementById("efficiencyCanvas");
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.width / dpr;
+      const H = canvas.height / dpr;
+      const pad = 60;
+      const innerPad = 20;
+      const minSDFdata = Math.min(...efficiencyData.map(d => d.sdf));
+      const maxSDFdata = Math.max(...efficiencyData.map(d => d.sdf));
+      const minSDF = Math.min(0.0, minSDFdata);
+      const maxSDF = (maxSDFdata > 0.2 ? maxSDFdata : 0.2) * 1.05;
+      const minPIRdata = Math.min(...efficiencyData.map(d => d.pir));
+      let maxPIR = Math.max(...efficiencyData.map(d => d.pir));
+      const minPIR = minPIRdata * 0.95;
+      maxPIR = (maxPIR > 1.75 ? maxPIR : 1.75) * 1.05 + 0.01;
+      const xScale = val => pad + ((val - minSDF) / (maxSDF - minSDF)) * (W - 2 * pad);
+      const yScale = val => (H - pad) - ((val - minPIR) / (maxPIR - minPIR)) * (H - 2 * pad);
+
+      const A = efficiencyData.find(d => d.method === "Instruction-Mining");
+      const B = efficiencyData.find(d => d.method === "InstructionGPT-4");
+      if (!A || !B) return;
+      const dx = B.sdf - A.sdf;
+      if (Math.abs(dx) < 1e-12) return;
+      const slope = (B.pir - A.pir) / (B.sdf - A.sdf);
+      const colorRectLeft = pad + innerPad;
+      const colorRectRight = W - pad - innerPad;
+      const leftSDF = minSDF + ((colorRectLeft - pad) / (W - 2 * pad)) * (maxSDF - minSDF);
+      const rightSDF = minSDF + ((colorRectRight - pad) / (W - 2 * pad)) * (maxSDF - minSDF);
+      const yAtLeft = A.pir + slope * (leftSDF - A.sdf);
+      const yAtRight = A.pir + slope * (rightSDF - A.sdf);
+      const X1 = colorRectLeft;
+      const Y1 = yScale(yAtLeft);
+      const X2 = colorRectRight;
+      const Y2 = yScale(yAtRight);
+
+      // Normal vector of baseline: n = (-(Y2 - Y1), X2 - X1) normalized
+      const dxBase = X2 - X1;
+      const dyBase = Y2 - Y1;
+      const norm = Math.sqrt(dxBase * dxBase + dyBase * dyBase);
+      const nx = -dyBase / norm;
+      const ny = dxBase / norm;
+
+      efficiencyData.forEach(d => {
+        const px = xScale(d.sdf);
+        const py = yScale(d.pir);
+        const proj = projectPointToLine(px, py, X1, Y1, X2, Y2);
+        const dxProj = px - proj[0];
+        const dyProj = py - proj[1];
+        const distance = Math.sqrt(dxProj * dxProj + dyProj * dyProj);
+        const dot = dxProj * nx + dyProj * ny;
+        const sign = (dot >= 0) ? 1 : -1;
+        d.effVal = sign * distance;
+      });
+
+      // Sort: descending by effVal, then alphabetically by method name, then by order (old first)
+      efficiencyData.sort((a, b) => {
+        if (a.effVal !== b.effVal) {
+          return a.effVal - b.effVal;
+        }
+        if (a.method.toLowerCase() < b.method.toLowerCase()) return -1;
+        if (a.method.toLowerCase() > b.method.toLowerCase()) return 1;
+        return a.order - b.order;
+      });
+    }
+
     // --- Modified Efficiency Table Update Function ---
     function populateEfficiencyTable() {
       const effTbody = document.querySelector("#efficiencyTable tbody");
       effTbody.innerHTML = "";
       const SEMInput = document.getElementById("SEM").value.trim();
       const BMInput = document.getElementById("BM").value.trim();
-      const SDFInput = document.getElementById("SDF").value.trim();
       const PIRInputVal = document.getElementById("PIR").value.trim();
+      const SDFInput = document.getElementById("SDF").value.trim();
 
       // If new efficiency input is provided, update the global efficiencyData array.
       if (SDFInput !== "") {
@@ -308,13 +379,14 @@
             pirValue = result.result;
           }
 
-          // Append new entries (one for each SDF value)
+          // Append new entries (one for each SDF value) with an order property.
           for (let i = 0; i < SDF.length; i++) {
             const methodName = methods[i] ? methods[i] : "Method " + (efficiencyData.length + 1);
             efficiencyData.push({
               method: methodName,
               sdf: SDF[i],
-              pir: pirValue
+              pir: pirValue,
+              order: nextEfficiencyOrder++
             });
           }
 
@@ -322,11 +394,15 @@
           document.getElementById("effMethodNames").value = "";
           document.getElementById("SEM").value = "";
           document.getElementById("BM").value = "";
-          document.getElementById("SDF").value = "";
+          
           document.getElementById("PIR").value = "";
+          document.getElementById("SDF").value = "";
           updateEfficiencyInputStates();
         }
       }
+
+      // --- NEW: Sort the efficiencyData array based on computed efficiency values ---
+      sortEfficiencyData();
 
       // Re-populate table from the entire efficiencyData array.
       efficiencyData.forEach(d => {
@@ -334,11 +410,12 @@
         let deleteButtonHTML = "";
         // Only allow deletion for non-baseline methods.
         if (d.method !== "Instruction-Mining" && d.method !== "InstructionGPT-4") {
-          deleteButtonHTML = `<button class="deleteBtn" data-method="${d.method}">Delete</button>`;
+          deleteButtonHTML = `<button class="deleteBtn" data-method="${d.method}" data-order="${d.order}">Delete</button>`;
         }
         tr.innerHTML = `<td>${d.method}</td>
-                        <td>${d.sdf}</td>
+                        
                         <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>
+                        <td>${d.sdf}</td>
                         <td>${deleteButtonHTML}</td>`;
         effTbody.appendChild(tr);
       });
@@ -347,7 +424,11 @@
       document.querySelectorAll(".deleteBtn").forEach(btn => {
         btn.addEventListener("click", function() {
           const methodToDelete = this.getAttribute("data-method");
-          efficiencyData = efficiencyData.filter(d => d.method !== methodToDelete);
+          const orderToDelete = parseInt(this.getAttribute("data-order"));
+          efficiencyData = efficiencyData.filter(d => {
+            // Match both method and order to ensure uniqueness.
+            return !(d.method === methodToDelete && d.order === orderToDelete);
+          });
           populateEfficiencyTable();
           drawEfficiencyPlot();
         });
@@ -930,7 +1011,7 @@
     // ===============================================================
     // Master update and Save functions
     // ===============================================================
-    // Remove the old global update button and use separate ones.
+    // Use separate update buttons.
     window.onload = () => {
       populateEfficiencyTable();
       populateFeasibilityTable();
