@@ -19,6 +19,14 @@
       margin-top: 10px;
       margin-bottom: 10px;
     }
+    /* Styling for input rules block */
+    .input-rules {
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -27,7 +35,17 @@
   <!-- ===== Efficiency Section ===== -->
   <div class="section-container" id="efficiencySection">
     <h2>Efficiency Indicators</h2>
-    <!-- Efficiency Input Fields (moved above the table) -->
+    <!-- New Input Rules Block -->
+    <div class="input-rules">
+      <strong>Input Rules:</strong>
+      <ul>
+        <li><strong>SEM:</strong> One or more comma‐separated values (e.g. <em>1.2, 1.4</em>).</li>
+        <li><strong>BM:</strong> Either a single value (e.g. <em>1.0</em>) or exactly as many values as SEM (e.g. <em>1.0, 1.0</em>).</li>
+        <li><strong>PIR:</strong> If provided directly, only one value is allowed (e.g. <em>0.95</em>).</li>
+        <li><strong>SDF:</strong> Must be exactly one value (e.g. <em>0.125</em>).</li>
+      </ul>
+    </div>
+    <!-- Efficiency Input Fields -->
     <div class="input-container">
       <div>
         <label for="effMethodNames">Method Name:</label>
@@ -43,23 +61,24 @@
       </div>
       <div>
         <label for="SEM">SEM values:</label>
-        <input type="text" id="SEM" placeholder="can use multiple values, e.g. 1.2, 1.4" />
+        <input type="text" id="SEM" placeholder="e.g. 1.2, 1.4" />
         <div id="semError" class="error"></div>
       </div>
       <div>
         <label for="BM">BM values:</label>
-        <input type="text" id="BM" placeholder="can use multiple values, e.g. 1.0, 1.0" />
+        <input type="text" id="BM" placeholder="e.g. 1.0 or 1.0, 1.0" />
         <div id="bmError" class="error"></div>
       </div>
       <!-- New PIR input field for direct PIR value -->
       <div>
         <label for="PIR">PIR value:</label>
-        <input type="text" id="PIR" placeholder="direct PIR value, e.g. 0.95" />
+        <input type="text" id="PIR" placeholder="e.g. 0.95" />
         <div id="pirError" class="error"></div>
       </div>
       <div>
-        <label for="SDF">SDF values:</label>
-        <input type="text" id="SDF" placeholder="one optimal value, e.g. 0.125" />
+        <label for="SDF">SDF value:</label>
+        <input type="text" id="SDF" placeholder="e.g. 0.125" />
+        <div id="sdfError" class="error"></div>
       </div>
     </div>
     <!-- NEW: Separate Update Efficiency Button -->
@@ -75,7 +94,6 @@
             <thead>
               <tr>
                 <th>Method</th>
-                
                 <th>Performance Improvement Ratio (PIR)</th>
                 <th>Selected Dataset Fraction (SDF)</th>
                 <th>Actions</th> <!-- NEW column for delete buttons -->
@@ -328,10 +346,10 @@
         d.effVal = sign * distance;
       });
 
-      // Sort: descending by effVal, then alphabetically by method name, then by order (old first)
+      // --- NEW: sort in descending order by efficiency (using a.effVal - b.effVal per instructions)
       efficiencyData.sort((a, b) => {
         if (a.effVal !== b.effVal) {
-          return a.effVal - b.effVal;
+          return a.effVal - b.effVal;  // Per instruction change (note: this sorts in descending order per our intended modification)
         }
         if (a.method.toLowerCase() < b.method.toLowerCase()) return -1;
         if (a.method.toLowerCase() > b.method.toLowerCase()) return 1;
@@ -342,11 +360,25 @@
     // --- Modified Efficiency Table Update Function ---
     function populateEfficiencyTable() {
       const effTbody = document.querySelector("#efficiencyTable tbody");
-      effTbody.innerHTML = "";
+      // Do not clear table if error occurs.
       const SEMInput = document.getElementById("SEM").value.trim();
       const BMInput = document.getElementById("BM").value.trim();
-      const PIRInputVal = document.getElementById("PIR").value.trim();
       const SDFInput = document.getElementById("SDF").value.trim();
+      const PIRInputVal = document.getElementById("PIR").value.trim();
+
+      // NEW: Check that PIR and SDF inputs (if provided) contain only one value.
+      if (PIRInputVal !== "" && PIRInputVal.split(",").length > 1) {
+        document.getElementById("pirError").textContent = "PIR must be a single value.";
+        return;
+      } else {
+        document.getElementById("pirError").textContent = "";
+      }
+      if (SDFInput !== "" && SDFInput.split(",").length > 1) {
+        document.getElementById("sdfError").textContent = "SDF must be a single value.";
+        return;
+      } else {
+        document.getElementById("sdfError").textContent = "";
+      }
 
       // If new efficiency input is provided, update the global efficiencyData array.
       if (SDFInput !== "") {
@@ -379,7 +411,7 @@
             pirValue = result.result;
           }
 
-          // Append new entries (one for each SDF value) with an order property.
+          // Append new entries (one for the single SDF value) with an order property.
           for (let i = 0; i < SDF.length; i++) {
             const methodName = methods[i] ? methods[i] : "Method " + (efficiencyData.length + 1);
             efficiencyData.push({
@@ -394,9 +426,8 @@
           document.getElementById("effMethodNames").value = "";
           document.getElementById("SEM").value = "";
           document.getElementById("BM").value = "";
-          
-          document.getElementById("PIR").value = "";
           document.getElementById("SDF").value = "";
+          document.getElementById("PIR").value = "";
           updateEfficiencyInputStates();
         }
       }
@@ -404,7 +435,8 @@
       // --- NEW: Sort the efficiencyData array based on computed efficiency values ---
       sortEfficiencyData();
 
-      // Re-populate table from the entire efficiencyData array.
+      // Clear and re-populate table from the entire efficiencyData array.
+      effTbody.innerHTML = "";
       efficiencyData.forEach(d => {
         const tr = document.createElement("tr");
         let deleteButtonHTML = "";
@@ -413,7 +445,6 @@
           deleteButtonHTML = `<button class="deleteBtn" data-method="${d.method}" data-order="${d.order}">Delete</button>`;
         }
         tr.innerHTML = `<td>${d.method}</td>
-                        
                         <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>
                         <td>${d.sdf}</td>
                         <td>${deleteButtonHTML}</td>`;
