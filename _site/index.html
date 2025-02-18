@@ -5,7 +5,20 @@
   <title>Minimalism Leaderboard</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* (Any additional inline styles can go here if needed) */
+    /* New inline styles for dynamic input feedback */
+    .disabled {
+      background-color: #e0e0e0;
+      pointer-events: none;
+    }
+    .error {
+      color: red;
+      font-size: 12px;
+    }
+    /* Simple styling for update buttons in each section */
+    .section-update-btn {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -17,8 +30,8 @@
     <!-- Efficiency Input Fields (moved above the table) -->
     <div class="input-container">
       <div>
-        <label for="effMethodNames">Method Names (optional, comma separated):</label>
-        <input type="text" id="effMethodNames" placeholder="e.g. Model1,Model2,Model3" />
+        <label for="effMethodNames">Method Name:</label>
+        <input type="text" id="effMethodNames" placeholder="e.g. AlpaGasus_demo" />
       </div>
       <div>
         <label for="pirType">PIR Type:</label>
@@ -30,16 +43,28 @@
       </div>
       <div>
         <label for="SEM">SEM values:</label>
-        <input type="text" id="SEM" placeholder="comma separated, e.g. 1,2,3" />
+        <input type="text" id="SEM" placeholder="can use multiple values, e.g. 1.2, 1.4" />
+        <div id="semError" class="error"></div>
       </div>
       <div>
         <label for="BM">BM values:</label>
-        <input type="text" id="BM" placeholder="comma separated, e.g. 1,2,3" />
+        <input type="text" id="BM" placeholder="can use multiple values, e.g. 1.0, 1.0" />
+        <div id="bmError" class="error"></div>
+      </div>
+      <!-- New PIR input field for direct PIR value -->
+      <div>
+        <label for="PIR">PIR value:</label>
+        <input type="text" id="PIR" placeholder="direct PIR value, e.g. 0.95" />
+        <div id="pirError" class="error"></div>
       </div>
       <div>
         <label for="SDF">SDF values:</label>
-        <input type="text" id="SDF" placeholder="comma separated, e.g. 0.1,0.2,0.3" />
+        <input type="text" id="SDF" placeholder="one optimal value, e.g. 0.125" />
       </div>
+    </div>
+    <!-- NEW: Separate Update Efficiency Button -->
+    <div class="section-update-btn">
+      <button id="updateEfficiencyBtn">Update Efficiency</button>
     </div>
 
     <!-- Efficiency Table & Plot in one row -->
@@ -52,6 +77,7 @@
                 <th>Method</th>
                 <th>Selected Dataset Fraction (SDF)</th>
                 <th>Performance Improvement Ratio (PIR)</th>
+                <th>Actions</th> <!-- NEW column for delete buttons -->
               </tr>
             </thead>
             <tbody></tbody>
@@ -69,6 +95,10 @@
   <!-- ===== Feasibility Section ===== -->
   <div class="section-container" id="feasibilitySection">
     <h2>Feasibility Indicators</h2>
+    <!-- NEW: Separate Update Feasibility Button -->
+    <div class="section-update-btn">
+      <button id="updateFeasibilityBtn">Update Feasibility</button>
+    </div>
     <!-- Feasibility Table & Plot in one row -->
     <div class="row-container">
       <div class="half">
@@ -134,17 +164,16 @@
     </div>
   </div>
 
-  <!-- Buttons -->
+  <!-- Bottom Save Button (unchanged) -->
   <div class="button-container">
-    <button id="updateBtn">Update</button>
     <button id="saveBtn">Save Data &amp; Plots</button>
   </div>
 
   <script>
     // ===============================================================
-    // Efficiency Calculation Functions (IO Interface Changes Only)
+    // Efficiency Calculation Functions (Updated for new input interactions)
     // ===============================================================
-    // Incorporate original efficiencyData as the default
+    // Global efficiencyData (default data)
     let efficiencyData = [
       { method: "AlpaGasus", sdf: 0.17, pir: 1.284 },
       { method: "Superfiltering", sdf: 0.05, pir: 1.475 },
@@ -177,92 +206,164 @@
       return null;
     }
 
+    // Updated getPIR: supports either a direct PIR input OR calculation from SEM/BM.
+    // Also supports two valid input cases: (a) multiple SEM with a single BM (broadcast) or (b) paired SEM and BM.
     function getPIR(type, SEM = null, BM = null, pir = null) {
       let PIR;
-      if (pir === null && SEM !== null && BM !== null) {
-        if (SEM.length !== BM.length) {
-          console.error("Error: SEM and BM must have the same length.");
-          return "Invalid input: SEM and BM must have the same length.";
-        }
-        let pirArray = SEM.map((sem, i) => sem / BM[i]);
-        pir = pirArray.reduce((a, b) => a + b, 0) / pirArray.length;
-      }
-      if (type === "same_win_rate") {
+      if (pir !== null) {
+        // Direct PIR input provided.
         PIR = pir;
-      } else if (type === "same_benchmark") {
-        PIR = transform(sameBenchPir = pir);
-      } else if (type === "other_benchmark") {
-        PIR = transform(othBenchPir = pir);
+      } else if (SEM !== null && BM !== null) {
+        if (BM.length === 1 && SEM.length >= 1) {
+          let pirArray = SEM.map(sem => sem / BM[0]);
+          pir = pirArray.reduce((acc, val) => acc + val, 0) / pirArray.length;
+        } else if (SEM.length === BM.length) {
+          let pirArray = SEM.map((sem, i) => sem / BM[i]);
+          pir = pirArray.reduce((acc, val) => acc + val, 0) / pirArray.length;
+        } else {
+          return { error: "Invalid input: Provide either one BM value with one or more SEM values, or equal-length arrays of SEM and BM values." };
+        }
+        if (type === "same_win_rate") {
+          PIR = pir;
+        } else if (type === "same_benchmark") {
+          PIR = transform(pir, 0);
+        } else if (type === "other_benchmark") {
+          PIR = transform(0, pir);
+        }
       }
-      return PIR;
+      return { result: PIR };
     }
 
-    // Read efficiency inputs, compute average PIR, and populate the table.
-    // If no input is provided, default to the original efficiencyData.
+    // --- Dynamic Input State Updates for Efficiency Section ---
+    function updateEfficiencyInputStates() {
+      const semInput = document.getElementById("SEM");
+      const bmInput = document.getElementById("BM");
+      const pirInput = document.getElementById("PIR");
+
+      // If SEM or BM have input, disable PIR.
+      if (semInput.value.trim() !== "" || bmInput.value.trim() !== "") {
+        pirInput.disabled = true;
+        pirInput.classList.add("disabled");
+      } else {
+        pirInput.disabled = false;
+        pirInput.classList.remove("disabled");
+      }
+
+      // If PIR has input, disable SEM and BM.
+      if (pirInput.value.trim() !== "") {
+        semInput.disabled = true;
+        bmInput.disabled = true;
+        semInput.classList.add("disabled");
+        bmInput.classList.add("disabled");
+      } else {
+        semInput.disabled = false;
+        bmInput.disabled = false;
+        semInput.classList.remove("disabled");
+        bmInput.classList.remove("disabled");
+      }
+    }
+
+    // Add event listeners to update input states dynamically.
+    document.getElementById("SEM").addEventListener("input", updateEfficiencyInputStates);
+    document.getElementById("BM").addEventListener("input", updateEfficiencyInputStates);
+    document.getElementById("PIR").addEventListener("input", updateEfficiencyInputStates);
+
+    // --- Modified Efficiency Table Update Function ---
     function populateEfficiencyTable() {
       const effTbody = document.querySelector("#efficiencyTable tbody");
       effTbody.innerHTML = "";
       const SEMInput = document.getElementById("SEM").value.trim();
       const BMInput = document.getElementById("BM").value.trim();
       const SDFInput = document.getElementById("SDF").value.trim();
+      const PIRInputVal = document.getElementById("PIR").value.trim();
 
-      // If any input is empty, use the default efficiencyData
-      if (!SEMInput || !BMInput || !SDFInput) {
-        efficiencyData.forEach(d => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${d.method}</td>
-                          <td>${d.sdf}</td>
-                          <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>`;
-          effTbody.appendChild(tr);
-        });
-        return;
+      // If new efficiency input is provided, update the global efficiencyData array.
+      if (SDFInput !== "") {
+        if (SEMInput !== "" || BMInput !== "" || PIRInputVal !== "") {
+          const methodNamesInput = document.getElementById("effMethodNames").value.trim();
+          const methods = methodNamesInput ? methodNamesInput.split(",").map(s => s.trim()) : [];
+          const pirType = document.getElementById("pirType").value;
+          const SEM = SEMInput ? SEMInput.split(",").map(Number) : [];
+          const BM = BMInput ? BMInput.split(",").map(Number) : [];
+          const SDF = SDFInput.split(",").map(Number);
+
+          if (PIRInputVal === "" && ((SEM.length > 0 || BM.length > 0) && (SEM.length !== BM.length && BM.length !== 1))) {
+            document.getElementById("semError").textContent = "SEM and BM must have the same number of values or BM must be a single value.";
+            document.getElementById("bmError").textContent = "SEM and BM must have the same number of values or BM must be a single value.";
+            return;
+          } else {
+            document.getElementById("semError").textContent = "";
+            document.getElementById("bmError").textContent = "";
+          }
+
+          let pirValue;
+          if (PIRInputVal !== "") {
+            pirValue = parseFloat(PIRInputVal);
+          } else {
+            const result = getPIR(pirType, SEM, BM, null);
+            if (result.error) {
+              alert(result.error);
+              return;
+            }
+            pirValue = result.result;
+          }
+
+          // Append new entries (one for each SDF value)
+          for (let i = 0; i < SDF.length; i++) {
+            const methodName = methods[i] ? methods[i] : "Method " + (efficiencyData.length + 1);
+            efficiencyData.push({
+              method: methodName,
+              sdf: SDF[i],
+              pir: pirValue
+            });
+          }
+
+          // Clear the input fields after adding.
+          document.getElementById("effMethodNames").value = "";
+          document.getElementById("SEM").value = "";
+          document.getElementById("BM").value = "";
+          document.getElementById("SDF").value = "";
+          document.getElementById("PIR").value = "";
+          updateEfficiencyInputStates();
+        }
       }
 
-      // Otherwise, recalculate based on user input.
-      const methodNamesInput = document.getElementById("effMethodNames").value.trim();
-      const methods = methodNamesInput ? methodNamesInput.split(",").map(s => s.trim()) : [];
-      const pirType = document.getElementById("pirType").value;
-      const SEM = SEMInput.split(",").map(Number);
-      const BM = BMInput.split(",").map(Number);
-      const SDF = SDFInput.split(",").map(Number);
-
-      if (SEM.length !== BM.length || SEM.length !== SDF.length) {
-        alert("SEM, BM, and SDF inputs must have the same number of values.");
-        return;
-      }
-      
-      const pirValue = getPIR(pirType, SEM, BM);
-      // Overwrite the global array with new computed values.
-      // Correct: append new rows without wiping out the existing data
-    // Append new rows without wiping out the existing data.
-    const initialLength = efficiencyData.length;
-    for (let i = 0; i < SEM.length; i++) {
-    const methodName = methods[i] ? methods[i] : "Method " + (initialLength + i + 1);
-    efficiencyData.push({
-        method: methodName,
-        sdf: SDF[i],
-        pir: pirValue
-    });
-    }
-
-    // Append only the newly added rows to the table.
-    efficiencyData.slice(initialLength).forEach(d => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${d.method}</td>
-                    <td>${d.sdf}</td>
-                    <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>`;
-    effTbody.appendChild(tr);
-    });
-
-
-      
+      // Re-populate table from the entire efficiencyData array.
       efficiencyData.forEach(d => {
         const tr = document.createElement("tr");
+        let deleteButtonHTML = "";
+        // Only allow deletion for non-baseline methods.
+        if (d.method !== "Instruction-Mining" && d.method !== "InstructionGPT-4") {
+          deleteButtonHTML = `<button class="deleteBtn" data-method="${d.method}">Delete</button>`;
+        }
         tr.innerHTML = `<td>${d.method}</td>
                         <td>${d.sdf}</td>
-                        <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>`;
+                        <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>
+                        <td>${deleteButtonHTML}</td>`;
         effTbody.appendChild(tr);
       });
+
+      // Attach event listeners to delete buttons.
+      document.querySelectorAll(".deleteBtn").forEach(btn => {
+        btn.addEventListener("click", function() {
+          const methodToDelete = this.getAttribute("data-method");
+          efficiencyData = efficiencyData.filter(d => d.method !== methodToDelete);
+          populateEfficiencyTable();
+          drawEfficiencyPlot();
+        });
+      });
+    }
+
+    // Separate update functions for Efficiency and Feasibility.
+    function updateEfficiency() {
+      populateEfficiencyTable();
+      drawEfficiencyPlot();
+    }
+
+    function updateFeasibility() {
+      addNewFeasibilityRow();
+      populateFeasibilityTable();
+      drawFeasibilityPlot();
     }
 
     // ===============================================================
@@ -508,34 +609,30 @@
         while (v <= maxVal + 1e-9) {
             const valStr = (Math.abs(v) < 1e-6) ? "0" : v.toFixed(2).replace(/\.?0+$/, "");
             if (axis === "x") {
-            // X-axis ticks: use the constant function to get the y coordinate (always H - pad)
-            const x = scaleFunc(v);
-            const y0 = constantFunc();
-            ctx.beginPath();
-            ctx.moveTo(x, y0);
-            ctx.lineTo(x, y0 + 5);
-            ctx.stroke();
-            ctx.textAlign = "center";
-            ctx.textBaseline = "top";
-            ctx.fillText(valStr, x, y0 + 5);
+              const x = scaleFunc(v);
+              const y0 = constantFunc();
+              ctx.beginPath();
+              ctx.moveTo(x, y0);
+              ctx.lineTo(x, y0 + 5);
+              ctx.stroke();
+              ctx.textAlign = "center";
+              ctx.textBaseline = "top";
+              ctx.fillText(valStr, x, y0 + 5);
             } else {
-            // Y-axis ticks: rotate the text so it fits.
-            const y = scaleFunc(v);
-            const x0 = constantFunc();
-            ctx.save();
-            ctx.translate(x0 - 8, y);
-            ctx.rotate(-Math.PI / 2);
-            ctx.textAlign = "right";
-            ctx.textBaseline = "middle";
-            ctx.fillText(valStr, 0, 0);
-            ctx.restore();
+              const y = scaleFunc(v);
+              const x0 = constantFunc();
+              ctx.save();
+              ctx.translate(x0 - 8, y);
+              ctx.rotate(-Math.PI / 2);
+              ctx.textAlign = "right";
+              ctx.textBaseline = "middle";
+              ctx.fillText(valStr, 0, 0);
+              ctx.restore();
             }
             v += step;
         }
         ctx.restore();
-        }
-
-
+    }
 
     // -------------------------
     // Draw Efficiency Plot
@@ -572,31 +669,24 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Draw X-axis ticks for Efficiency Plot (for SDF)
-        ctx.save();
-        ctx.font = "12px sans-serif";
-        ctx.fillStyle = "#000";
-        for (let v = minSDF; v <= maxSDF; v += 0.05) {
-        // Use the y-position corresponding to the lower bound of PIR.
-        // (In the feasibility plot, we use yScale(0) because minVal=0;
-        // here use yScale(minPIR) since that is the lower bound for PIR.)
+      ctx.save();
+      ctx.font = "12px sans-serif";
+      ctx.fillStyle = "#000";
+      for (let v = minSDF; v <= maxSDF; v += 0.05) {
         const x = xScale(v);
         const y0 = yScale(minPIR);
         ctx.beginPath();
         ctx.moveTo(x, y0);
         ctx.lineTo(x, y0 + 5);
         ctx.stroke();
-        // Mark the tick value (formatted as needed)
         ctx.fillText(v.toFixed(2).replace(/\.?0+$/, ""), x, y0 + 15);
-        }
-        ctx.restore();
+      }
+      ctx.restore();
 
-        // Draw Y-axis ticks for Efficiency Plot (for PIR)
-        ctx.save();
-        ctx.font = "12px sans-serif";
-        ctx.fillStyle = "#000";
-        for (let v = minPIR; v <= maxPIR; v += 0.1) {
-        // Use the x-position corresponding to the lower bound of SDF.
+      ctx.save();
+      ctx.font = "12px sans-serif";
+      ctx.fillStyle = "#000";
+      for (let v = minPIR; v <= maxPIR; v += 0.1) {
         const y = yScale(v);
         const x0 = xScale(minSDF);
         ctx.beginPath();
@@ -606,11 +696,8 @@
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
         ctx.fillText(v.toFixed(2).replace(/\.?0+$/, ""), x0 - 8, y);
-        }
-        ctx.restore();
-
-
-
+      }
+      ctx.restore();
 
       ctx.save();
       ctx.fillStyle = "#000";
@@ -843,13 +930,16 @@
     // ===============================================================
     // Master update and Save functions
     // ===============================================================
-    function updateAll() {
+    // Remove the old global update button and use separate ones.
+    window.onload = () => {
       populateEfficiencyTable();
-      addNewFeasibilityRow();
       populateFeasibilityTable();
       drawEfficiencyPlot();
       drawFeasibilityPlot();
-    }
+      document.getElementById("updateEfficiencyBtn").addEventListener("click", updateEfficiency);
+      document.getElementById("updateFeasibilityBtn").addEventListener("click", updateFeasibility);
+      document.getElementById("saveBtn").addEventListener("click", saveDataAndPlots);
+    };
 
     function saveDataAndPlots() {
       const dataObj = { efficiencyData, feasibilityData };
@@ -871,15 +961,6 @@
       downloadCanvas("efficiencyCanvas", "efficiency_plot.png");
       downloadCanvas("feasibilityCanvas", "feasibility_plot.png");
     }
-
-    window.onload = () => {
-      populateEfficiencyTable();
-      populateFeasibilityTable();
-      drawEfficiencyPlot();
-      drawFeasibilityPlot();
-      document.getElementById("updateBtn").addEventListener("click", updateAll);
-      document.getElementById("saveBtn").addEventListener("click", saveDataAndPlots);
-    };
   </script>
 </body>
 </html>

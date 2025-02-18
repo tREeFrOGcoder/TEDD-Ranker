@@ -21,7 +21,7 @@ def transform(same_bench_pir=0, oth_bench_pir=0):
         model_oth_bench.fit(X.reshape(-1,1), Y.reshape(-1,1))
         win_same_pir = float(model_oth_bench.predict(np.array(oth_bench_pir).reshape(-1,1)))
         return win_same_pir
-    
+
 
 """
 type: a string choose from ["same_win", "same_bench", "other_bench"]. Corresponding to the four settings provided (There is no operation for the category: "other_win", becasue it is neither common nor useful)
