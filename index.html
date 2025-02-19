@@ -93,6 +93,7 @@
           <table id="efficiencyTable" class="leaderboard-table">
             <thead>
               <tr>
+                <th>Efficiency Rank</th>
                 <th>Method</th>
                 <th>Performance Improvement Ratio (PIR)</th>
                 <th>Selected Dataset Fraction (SDF)</th>
@@ -111,77 +112,87 @@
     </div>
   </div>
 
-  <!-- ===== Feasibility Section ===== -->
-  <div class="section-container" id="feasibilitySection">
-    <h2>Feasibility Indicators</h2>
-    <!-- NEW: Separate Update Feasibility Button -->
-    <div class="section-update-btn">
-      <button id="updateFeasibilityBtn">Update Feasibility</button>
-    </div>
-    <!-- Feasibility Table & Plot in one row -->
-    <div class="row-container">
-      <div class="half">
-        <div class="table-container">
-          <table id="feasibilityTable" class="leaderboard-table">
-            <thead>
-              <tr>
-                <th>Method</th>
-                <th># Trained LLMs</th>
-                <th># Algorithm Steps (Using LLMs)</th>
-                <th>Rep.</th>
-                <th>Model Free</th>
-                <th>Dataset Free</th>
-                <th>ChatGPT Free</th>
-                <th>Simplicity</th>
-                <th>Flexibility</th>
-                <th>Feasibility</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-            <tfoot>
-              <tr>
+<!-- ===== Feasibility Section ===== -->
+<div class="section-container" id="feasibilitySection">
+  <h2>Feasibility Indicators</h2>
+  <!-- Input Rules for Feasibility -->
+  <div class="input-rules">
+    <strong>Input Rules:</strong>
+    <ul>
+      <li><strong>LLM Count:</strong> A numeric value (e.g. <em>0</em>, <em>1</em>, <em>30</em>, <em>500</em>). (May include a "*" marker in exceptional cases.)</li>
+      <li><strong>Steps:</strong> A string with a primary number and a bracketed number (e.g. <em>2(1)</em>). Only the number before the bracket is used.</li>
+      <li><strong>Rep:</strong> Select <em>true</em> or <em>false</em> (true means no penalty).</li>
+      <li><strong>Model Free, Dataset Free, ChatGPT Free:</strong> Select <em>true</em> (good) or <em>false</em> (penalty applied).</li>
+      <li>The last three columns (Simplicity, Flexibility, Feasibility) are computed automatically.</li>
+    </ul>
+  </div>
+  <div class="row-container feasibility-row">
+    <div class="table-wide">
+      <div class="table-container">
+        <table id="feasibilityTable" class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Feasibility Rank</th>
+              <th>Method</th>
+              <th># Trained LLMs</th>
+              <th>Steps</th>
+              <th>Rep.</th>
+              <th>Simplicity Rank</th>
+              <th>Model Free</th>
+              <th>Dataset Free</th>
+              <th>ChatGPT Free</th>
+              <th>Flexibility Rank</th>
+              
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+                <td>Auto</td> <!-- Feasibility Rank -->
                 <td><input type="text" id="newFeasMethod" placeholder="Method Name" /></td>
                 <td><input type="text" id="newFeasLLM" placeholder="#LLMs" /></td>
-                <td><input type="text" id="newFeasSteps" placeholder="#Steps(LLMs)" /></td>
+                <td><input type="text" id="newFeasSteps" placeholder="Steps" /></td>
                 <td>
-                  <select id="newFeasRep">
-                    <option value="true">&#10004;</option>
-                    <option value="false">&#10007;</option>
-                  </select>
+                    <select id="newFeasRep">
+                        <option value="true">&#10004;</option>
+                        <option value="false">&#10007;</option>
+                    </select>
+                </td>
+                <td>Auto</td> <!-- Simplicity Rank -->
+                <td>
+                    <select id="newFeasModelFree">
+                        <option value="true">&#10004;</option>
+                        <option value="false">&#10007;</option>
+                    </select>
                 </td>
                 <td>
-                  <select id="newFeasModelFree">
-                    <option value="true">&#10004;</option>
-                    <option value="false">&#10007;</option>
-                  </select>
+                    <select id="newFeasDataFree">
+                        <option value="true">&#10004;</option>
+                        <option value="false">&#10007;</option>
+                    </select>
                 </td>
                 <td>
-                  <select id="newFeasDataFree">
-                    <option value="true">&#10004;</option>
-                    <option value="false">&#10007;</option>
-                  </select>
+                    <select id="newFeasChatFree">
+                        <option value="true">&#10004;</option>
+                        <option value="false">&#10007;</option>
+                    </select>
                 </td>
-                <td>
-                  <select id="newFeasChatFree">
-                    <option value="true">&#10004;</option>
-                    <option value="false">&#10007;</option>
-                  </select>
-                </td>
-                <td>Auto</td>
-                <td>Auto</td>
-                <td><input type="number" step="1" id="newFeasFeas" placeholder="Feas." /></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+                <td>Auto</td> <!-- Flexibility Rank -->
+            </tr>
+        </tfoot>
+        </table>
       </div>
-      <div class="half">
-        <div class="plot-container">
-          <canvas id="feasibilityCanvas" width="700" height="500"></canvas>
-        </div>
+    </div>
+    <div class="plot-narrow">
+      <div class="plot-container feasibility-plot">
+        <canvas id="feasibilityCanvas" width="700" height="700"></canvas>
       </div>
     </div>
   </div>
+  <div class="section-update-btn">
+    <button id="updateFeasibilityBtn">Update Feasibility</button>
+  </div>
+</div>
 
   <!-- Bottom Save Button (unchanged) -->
   <div class="button-container">
@@ -349,11 +360,31 @@
       // --- NEW: sort in descending order by efficiency (using a.effVal - b.effVal per instructions)
       efficiencyData.sort((a, b) => {
         if (a.effVal !== b.effVal) {
-          return a.effVal - b.effVal;  // Per instruction change (note: this sorts in descending order per our intended modification)
+          return a.effVal - b.effVal;
         }
         if (a.method.toLowerCase() < b.method.toLowerCase()) return -1;
         if (a.method.toLowerCase() > b.method.toLowerCase()) return 1;
         return a.order - b.order;
+      });
+
+
+      // Add dense ranking for efficiency
+      let efficiencyRank = {};
+      let denseRank = 0;
+      let prevEffVal = null;
+      
+      efficiencyData.forEach((d, i) => {
+          if (i === 0 || Math.abs(d.effVal - prevEffVal) > 1e-6) {
+              denseRank++;
+              efficiencyRank[d.method] = denseRank;
+              prevEffVal = d.effVal;
+          } else {
+              efficiencyRank[d.method] = denseRank;
+          }
+      });
+      
+      efficiencyData.forEach(d => {
+          d.efficiencyRank = efficiencyRank[d.method];
       });
     }
 
@@ -444,7 +475,8 @@
         if (d.method !== "Instruction-Mining" && d.method !== "InstructionGPT-4") {
           deleteButtonHTML = `<button class="deleteBtn" data-method="${d.method}" data-order="${d.order}">Delete</button>`;
         }
-        tr.innerHTML = `<td>${d.method}</td>
+        tr.innerHTML = `<td>${d.efficiencyRank}</td>
+                        <td>${d.method}</td>
                         <td>${(typeof d.pir === "number") ? d.pir.toFixed(4) : d.pir}</td>
                         <td>${d.sdf}</td>
                         <td>${deleteButtonHTML}</td>`;
@@ -479,7 +511,7 @@
     }
 
     // ===============================================================
-    // Feasibility Data and Table (Input and Auto-calculated Columns)
+    // Feasibility Data and Rankings
     // ===============================================================
     const feasibilityData = [
       {
@@ -487,170 +519,231 @@
         llmCount: "0",
         steps: "2(1)",
         rep: false,
-        simplicity: 1,
         modelFree: true,
         datasetFree: true,
         chatGPTFree: false,
-        flexibility: 1,
-        feasibility: 1
       },
       {
         method: "InsTag",
         llmCount: "0",
         steps: "3(1)",
         rep: false,
-        simplicity: 2,
         modelFree: true,
         datasetFree: true,
         chatGPTFree: false,
-        flexibility: 1,
-        feasibility: 2
       },
       {
         method: "CaR",
         llmCount: "0",
         steps: "4(0)",
         rep: true,
-        simplicity: 2,
         modelFree: true,
         datasetFree: true,
         chatGPTFree: true,
-        flexibility: 2,
-        feasibility: 3
       },
       {
         method: "Nuggets",
         llmCount: "0",
         steps: "4(2)",
         rep: true,
-        simplicity: 2,
         modelFree: true,
         datasetFree: true,
         chatGPTFree: true,
-        flexibility: 2,
-        feasibility: 3
       },
       {
         method: "SelectIT",
         llmCount: "0",
         steps: "4(3)",
         rep: true,
-        simplicity: 2,
         modelFree: true,
         datasetFree: true,
         chatGPTFree: true,
-        flexibility: 2,
-        feasibility: 3
       },
       {
         method: "Superfiltering",
         llmCount: "1*",
         steps: "3(1*)",
         rep: true,
-        simplicity: 3,
         modelFree: false,
         datasetFree: false,
         chatGPTFree: true,
-        flexibility: 3,
-        feasibility: 4
       },
       {
         method: "IFD",
         llmCount: "1",
         steps: "3(1)",
         rep: true,
-        simplicity: 4,
         modelFree: false,
         datasetFree: false,
         chatGPTFree: true,
-        flexibility: 3,
-        feasibility: 5
       },
       {
         method: "LESS",
         llmCount: "1",
         steps: "4(2)",
         rep: true,
-        simplicity: 5,
         modelFree: false,
         datasetFree: false,
         chatGPTFree: true,
-        flexibility: 3,
-        feasibility: 6
       },
       {
         method: "DEITA",
         llmCount: "2",
         steps: "5(4)",
         rep: true,
-        simplicity: 6,
         modelFree: false,
         datasetFree: false,
         chatGPTFree: false,
-        flexibility: 5,
-        feasibility: 7
       },
       {
         method: "InstructionGPT-4",
         llmCount: "30",
         steps: "4(1)",
         rep: true,
-        simplicity: 7,
         modelFree: false,
         datasetFree: true,
         chatGPTFree: false,
-        flexibility: 4,
-        feasibility: 7
       },
       {
         method: "SHED",
         llmCount: "500",
         steps: "3(0)",
         rep: true,
-        simplicity: 8,
         modelFree: false,
         datasetFree: false,
         chatGPTFree: true,
-        flexibility: 3,
-        feasibility: 7
       },
       {
         method: "Instruction-Mining",
         llmCount: "129",
         steps: "4(0)",
         rep: false,
-        simplicity: 8,
         modelFree: false,
         datasetFree: true,
         chatGPTFree: false,
-        flexibility: 4,
-        feasibility: 8
       }
     ];
 
+    function computeFeasibilityRanks() {
+      // First compute weighted scores for simplicity and flexibility.
+      feasibilityData.forEach(d => {
+        let llm = parseFloat(d.llmCount.replace(/[^0-9\.]/g, ""));
+        let stepsMatch = d.steps.match(/^(\d+)/);
+        let stepsNum = stepsMatch ? parseFloat(stepsMatch[1]) : 0;
+        let repPenalty = d.rep ? 0 : 1;
+        let llmWeight = 2;
+        if(d.method === "Superfiltering") { llmWeight = 1.5; }
+        // If llm > 100, assign a fixed simplicity score of 200 as per requirements.
+        let simplicityScore = (llm > 100) ? 200 : (llm * llmWeight + stepsNum + repPenalty);
+        d.simplicityScore = simplicityScore;
+        let modelPenalty = d.modelFree ? 0 : 3;
+        let dataPenalty = d.datasetFree ? 0 : 2;
+        let chatPenalty = d.chatGPTFree ? 0 : 1;
+        let flexibilityScore = modelPenalty + dataPenalty + chatPenalty;
+        d.flexibilityScore = flexibilityScore;
+      });
+
+      // --- Dense ranking for simplicity ---
+      let sortedSimplicity = [...feasibilityData].sort((a, b) => a.simplicityScore - b.simplicityScore);
+      let simplicityRank = {};
+      let denseRank = 0;
+      let prevScore = null;
+      for (let i = 0; i < sortedSimplicity.length; i++) {
+          let score = sortedSimplicity[i].simplicityScore;
+          if (i === 0 || Math.abs(score - prevScore) > 1e-6) {
+              denseRank++;
+              simplicityRank[sortedSimplicity[i].method] = denseRank;
+              prevScore = score;
+          } else {
+              simplicityRank[sortedSimplicity[i].method] = denseRank;
+          }
+      }
+      feasibilityData.forEach(d => { d.simplicityRank = simplicityRank[d.method]; });
+
+      // --- Dense ranking for flexibility ---
+      let sortedFlex = [...feasibilityData].sort((a, b) => a.flexibilityScore - b.flexibilityScore);
+      let flexibilityRank = {};
+      denseRank = 0;
+      prevScore = null;
+      for (let i = 0; i < sortedFlex.length; i++) {
+          let score = sortedFlex[i].flexibilityScore;
+          if (i === 0 || Math.abs(score - prevScore) > 1e-6) {
+              denseRank++;
+              flexibilityRank[sortedFlex[i].method] = denseRank;
+              prevScore = score;
+          } else {
+              flexibilityRank[sortedFlex[i].method] = denseRank;
+          }
+      }
+      feasibilityData.forEach(d => { d.flexibilityRank = flexibilityRank[d.method]; });
+
+      // --- Dense ranking for final feasibility (sum of simplicityRank and flexibilityRank) ---
+      let sortedFinal = [...feasibilityData].sort((a, b) => (a.simplicityRank + a.flexibilityRank) - (b.simplicityRank + b.flexibilityRank));
+      let finalRankMap = {};
+      denseRank = 0;
+      prevScore = null;
+      for (let i = 0; i < sortedFinal.length; i++) {
+          let sum = sortedFinal[i].simplicityRank + sortedFinal[i].flexibilityRank;
+          if (i === 0 || Math.abs(sum - prevScore) > 1e-6) {
+              denseRank++;
+              finalRankMap[sortedFinal[i].method] = denseRank;
+              prevScore = sum;
+          } else {
+              finalRankMap[sortedFinal[i].method] = denseRank;
+          }
+      }
+      feasibilityData.forEach(d => {
+          d.feasibilityRank = finalRankMap[d.method];
+      });
+    }
+
+
+
+    // Add sorting function for feasibility table display
+    function sortFeasibilityData() {
+        feasibilityData.sort((a, b) => {
+            // Sort by feasibility rank (ascending)
+            if (b.feasibilityRank !== a.feasibilityRank) {
+                return a.feasibilityRank - b.feasibilityRank;
+            }
+            // Break tie with simplicity rank
+            if (b.simplicityRank !== a.simplicityRank) {
+                return a.simplicityRank - b.simplicityRank;
+            }
+            // Break tie with flexibility rank
+            if (b.flexibilityRank !== a.flexibilityRank) {
+                return a.flexibilityRank - b.flexibilityRank;
+            }
+            // Finally break tie alphabetically
+            return b.method.localeCompare(a.method);
+        });
+    }
+
     function populateFeasibilityTable() {
+      computeFeasibilityRanks();
+      sortFeasibilityData();
+
       const feasTbody = document.querySelector("#feasibilityTable tbody");
       feasTbody.innerHTML = "";
       feasibilityData.forEach(d => {
         const repVal = d.rep ? "&#10004;" : "&#10007;";
-        const mfVal  = d.modelFree   ? "&#10004;" : "&#10007;";
+        const mfVal  = d.modelFree ? "&#10004;" : "&#10007;";
         const dfVal  = d.datasetFree ? "&#10004;" : "&#10007;";
         const cfVal  = d.chatGPTFree ? "&#10004;" : "&#10007;";
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${d.method}</td>
+        tr.innerHTML = `<td>${d.feasibilityRank}</td>
+                        <td>${d.method}</td>
                         <td>${d.llmCount}</td>
                         <td>${d.steps}</td>
                         <td>${repVal}</td>
+                        <td>${d.simplicityRank}</td>
                         <td>${mfVal}</td>
                         <td>${dfVal}</td>
                         <td>${cfVal}</td>
-                        <td>${d.simplicity}</td>
-                        <td>${d.flexibility}</td>
-                        <td>${d.feasibility}</td>`;
+                        <td>${d.flexibilityRank}</td>`;
         feasTbody.appendChild(tr);
       });
     }
-
     // Adds a new feasibility row based on tfoot inputs.
     function addNewFeasibilityRow() {
       const fm = document.getElementById("newFeasMethod").value.trim();
@@ -660,23 +753,22 @@
       const fmf = document.getElementById("newFeasModelFree").value === "true";
       const fdf = document.getElementById("newFeasDataFree").value === "true";
       const fcf = document.getElementById("newFeasChatFree").value === "true";
-      const ffeas = parseInt(document.getElementById("newFeasFeas").value);
-      if (fm && fllm && fsteps && !isNaN(ffeas)) {
-        const fsimp = "Auto";
-        const fflex = "Auto";
+      if (fm && fllm && fsteps) {
         feasibilityData.push({
           method: fm,
           llmCount: fllm,
           steps: fsteps,
           rep: frep,
-          simplicity: fsimp,
           modelFree: fmf,
           datasetFree: fdf,
-          chatGPTFree: fcf,
-          flexibility: fflex,
-          feasibility: ffeas
+          chatGPTFree: fcf
         });
       }
+    }
+    function updateFeasibility() {
+      addNewFeasibilityRow();
+      populateFeasibilityTable();
+      drawFeasibilityPlot();
     }
 
     // ===============================================================
@@ -758,17 +850,14 @@
       ctx.clearRect(0, 0, W, H);
       const pad = 60;
       const innerPad = 20;
-
       const minSDFdata = Math.min(...efficiencyData.map(d => d.sdf));
       const maxSDFdata = Math.max(...efficiencyData.map(d => d.sdf));
       const minSDF = Math.min(0.0, minSDFdata);
       const maxSDF = (maxSDFdata > 0.2 ? maxSDFdata : 0.2) * 1.05;
-
       const minPIRdata = Math.min(...efficiencyData.map(d => d.pir));
       let maxPIR = Math.max(...efficiencyData.map(d => d.pir));
       const minPIR = minPIRdata * 0.95;
       maxPIR = (maxPIR > 1.75 ? maxPIR : 1.75) * 1.05 + 0.01;
-
       const xScale = val => pad + ((val - minSDF) / (maxSDF - minSDF)) * (W - 2 * pad);
       const yScale = val => (H - pad) - ((val - minPIR) / (maxPIR - minPIR)) * (H - 2 * pad);
 
@@ -930,13 +1019,13 @@
       const W = size, H = size;
       ctx.clearRect(0, 0, W, H);
       const pad = 60;
-      const minVal = 0;
+      // Modified: use simplicityRank and flexibilityRank instead of simplicity and flexibility.
       const maxVal = Math.max(
-        Math.max(...feasibilityData.map(d => (typeof d.simplicity === "number" ? d.simplicity : 0))),
-        Math.max(...feasibilityData.map(d => (typeof d.flexibility === "number" ? d.flexibility : 0)))
+        Math.max(...feasibilityData.map(d => (typeof d.simplicityRank === "number" ? d.simplicityRank : 0))),
+        Math.max(...feasibilityData.map(d => (typeof d.flexibilityRank === "number" ? d.flexibilityRank : 0)))
       ) + 1;
-      const xScale = v => pad + (v - minVal) / (maxVal - minVal) * (W - 2 * pad);
-      const yScale = v => (H - pad) - (v - minVal) / (maxVal - minVal) * (H - 2 * pad);
+      const xScale = v => pad + (v - 0) / (maxVal - 0) * (W - 2 * pad);
+      const yScale = v => (H - pad) - (v - 0) / (maxVal - 0) * (H - 2 * pad);
       const usedLabels = [];
       function placeLabel(px, py, text) {
         let labelY = py + 14;
@@ -958,7 +1047,7 @@
         ctx.save();
         ctx.font = "12px sans-serif";
         ctx.fillStyle = "#000";
-        for (let v = minVal; v <= maxVal; v++) {
+        for (let v = 0; v <= maxVal; v++) {
           const x = xScale(v), y0 = yScale(0);
           ctx.beginPath();
           ctx.moveTo(x, y0);
@@ -986,7 +1075,7 @@
       ctx.rotate(-Math.PI / 2);
       ctx.fillText("Flexibility Rank", 0, 0);
       ctx.restore();
-      const x0 = xScale(minVal), y0 = yScale(minVal);
+      const x0 = xScale(0), y0 = yScale(0);
       const xMax = xScale(maxVal - 0.5), yMax = yScale(maxVal - 0.5);
       ctx.save();
       ctx.strokeStyle = "orange";
@@ -998,9 +1087,9 @@
       ctx.stroke();
       ctx.restore();
       feasibilityData.forEach(d => {
-        if (typeof d.simplicity !== "number" || typeof d.flexibility !== "number") return;
-        const sx = xScale(d.simplicity);
-        const sy = yScale(d.flexibility);
+        if (typeof d.simplicityRank !== "number" || typeof d.flexibilityRank !== "number") return;
+        const sx = xScale(d.simplicityRank);
+        const sy = yScale(d.flexibilityRank);
         const [px, py] = projectPointToLine(sx, sy, x0, y0, xMax, yMax);
         ctx.save();
         ctx.setLineDash([3, 3]);
@@ -1028,7 +1117,8 @@
         ctx.font = "14px sans-serif";
         ctx.fillStyle = "#000";
         ctx.textAlign = "left";
-        ctx.fillText(d.feasibility, px - 10, py - 6);
+        // Modified: label with final feasibility rank
+        ctx.fillText(d.feasibilityRank, px - 10, py - 6);
         ctx.restore();
         ctx.save();
         ctx.font = "14px sans-serif";
@@ -1038,6 +1128,7 @@
         ctx.restore();
       });
     }
+
 
     // ===============================================================
     // Master update and Save functions

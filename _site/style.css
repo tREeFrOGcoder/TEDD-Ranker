@@ -1,3 +1,4 @@
+/* Global styles */
 body {
   font-family: "Helvetica Neue", Arial, sans-serif;
   background-color: #fafafa;
@@ -17,6 +18,7 @@ h2 {
   font-weight: 600;
 }
 
+/* Table styles */
 .table-container {
   overflow-x: auto;
   margin-bottom: 1rem;
@@ -48,6 +50,7 @@ h2 {
   box-sizing: border-box;
 }
 
+/* Button styles */
 .button-container {
   text-align: center;
   margin: 1.5rem 0;
@@ -68,6 +71,7 @@ h2 {
   background: #f0f0f0;
 }
 
+/* Plot styles */
 .plot-container {
   display: block;
   justify-content: center;
@@ -79,7 +83,7 @@ h2 {
   padding: 1rem;
 }
 
-/* New layout styles for the revised interface */
+/* Section styles */
 .section-container {
   background: #fff;
   border: 1px solid #ccc;
@@ -88,23 +92,33 @@ h2 {
   margin-bottom: 2rem;
 }
 
+/* Row layout */
 .row-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
   gap: 1rem;
-  max-width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
 }
 
-
+/* For efficiency section, we use .half */
 .half {
   flex: 1;
   min-width: 300px;
 }
 
+/* For feasibility section, use 3/4 and 1/4 layout */
+.three-fourth {
+  flex: 3;
+  min-width: 300px;
+}
+
+.one-fourth {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Input container */
 .input-container {
   display: flex;
   flex-wrap: wrap;
@@ -131,4 +145,79 @@ h2 {
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+}
+
+/* Disabled input styling */
+.disabled {
+  background-color: #e0e0e0;
+  pointer-events: none;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+}
+
+/* Section update button */
+.section-update-btn {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Input rules block */
+.input-rules {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+
+
+
+
+
+
+/* -------------------- */
+/* -------------------- */
+/* -------------------- */
+/* -------------------- */
+/* Add these new styles */
+
+/* Specific layout adjustments for feasibility section */
+.feasibility-row {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.table-wide {
+  flex: 3;
+  min-width: 800px; /* Increased from default 300px */
+  margin-right: 1rem;
+}
+
+.plot-narrow {
+  flex: 1;
+  min-width: 400px; /* Adjusted for square plot */
+  max-width: 500px; /* Limit maximum width */
+}
+
+.feasibility-plot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+}
+
+/* Modify existing plot-container style */
+.plot-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 1rem;
 }
