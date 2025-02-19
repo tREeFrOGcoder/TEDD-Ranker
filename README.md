@@ -4,3 +4,4 @@ One stop workplace to calculate the efficiency and feasibility of your data sele
 
 ---
 ## How to use:
+Check out the link: https://zicheliu.com/TEDD-Ranker/
