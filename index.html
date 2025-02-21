@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Minimalism Leaderboard</title>
+  <title>Efficiency-Feasibility Leaderboard</title>
   <link rel="stylesheet" href="style.css" />
   <style>
     /* New inline styles for dynamic input feedback */
@@ -30,7 +30,7 @@
   </style>
 </head>
 <body>
-  <h1>Minimalism Leaderboard</h1>
+  <h1>Efficiency-Feasibility Leaderboard</h1>
 
   <!-- ===== Efficiency Section ===== -->
   <div class="section-container" id="efficiencySection">
@@ -40,7 +40,7 @@
       <strong>Input Rules:</strong>
       <ul>
         <li><strong>SEM:</strong> One or more comma‐separated values (e.g. <em>1.2, 1.4</em>).</li>
-        <li><strong>BM:</strong> Either a single value (e.g. <em>1.0</em>) or exactly as many values as SEM (e.g. <em>1.0, 1.0</em>).</li>
+        <li><strong>BLM:</strong> Either a single value (e.g. <em>1.0</em>) or exactly as many values as SEM (e.g. <em>1.0, 1.0</em>).</li>
         <li><strong>PIR:</strong> If provided directly, only one value is allowed (e.g. <em>0.95</em>).</li>
         <li><strong>SDF:</strong> Must be exactly one value (e.g. <em>0.125</em>).</li>
       </ul>
@@ -65,9 +65,9 @@
         <div id="semError" class="error"></div>
       </div>
       <div>
-        <label for="BM">BM values:</label>
-        <input type="text" id="BM" placeholder="e.g. 1.0 or 1.0, 1.0" />
-        <div id="bmError" class="error"></div>
+        <label for="BLM">BLM values:</label>
+        <input type="text" id="BLM" placeholder="e.g. 1.0 or 1.0, 1.0" />
+        <div id="BLMError" class="error"></div>
       </div>
       <!-- New PIR input field for direct PIR value -->
       <div>
@@ -119,12 +119,21 @@
   <div class="input-rules">
     <strong>Input Rules:</strong>
     <ul>
-      <li><strong>LLM Count:</strong> A numeric value (e.g. <em>0</em>, <em>1</em>, <em>30</em>, <em>500</em>). (May include a "*" marker in exceptional cases.)</li>
-      <li><strong>Steps:</strong> A string with a primary number and a bracketed number (e.g. <em>2(1)</em>). Only the number before the bracket is used.</li>
-      <li><strong>Rep:</strong> Select <em>true</em> or <em>false</em> (true means no penalty).</li>
-      <li><strong>Model Free, Dataset Free, ChatGPT Free:</strong> Select <em>true</em> (good) or <em>false</em> (penalty applied).</li>
-      <li>The last three columns (Simplicity, Flexibility, Feasibility) are computed automatically.</li>
+      <li><strong># Trained LLMs:</strong> How many LLMs are trained during construction of your Data Selector.</li>
+      <li><strong>Steps:</strong> How many algorithm steps do you have for a data selection process. For counting method, please refer to paper's appendix A.5. (Only the number before the bracket is used for ranking.)</li>
+      <li><strong>Rep: Whether your work has open-source codes. </strong> Select <em>true</em> or <em>false</em>.</li>
+      <li><strong>Model Free:</strong> If the selector model is changed, will the performance be influenced?</li>
+      <li><strong>Dataset Free:</strong> If the candidate dataset is changed, do you need to re-train the selector?</li>
+      <li><strong>ChatGPT Free</strong>: Does your selection rely on ChatGPT/GPT-4 like proprietary models?</li>
     </ul>
+    <strong>Ranking Algorithm:</strong>
+      <ul>
+        <li><strong>Feasibility Rank</strong> is based on ranking of each work's <strong>Simplicity Rank + Flexibility Rank</strong>.</li>
+        <li><strong>Simplicity Rank</strong> is based on ranking of each work's <strong>Simplicity Penalty = 2*LLMCount + 1*Steps + 1*NotReproducible.</strong></li>
+        <li>Smaller Simplicity Penalty --> Higher Simplicity Rank</li>
+        <li><strong>Flexibility Rank</strong> is based on ranking of each work's <strong>Flexibility Penalty = 3*NotModelFree + 2*NotDatasetFree + 1*NotGPTFree.</strong></li>
+        <li>Smaller Flexibility Penalty --> Higher Flexibility Rank</li>
+      </ul>
   </div>
   <div class="row-container feasibility-row">
     <div class="table-wide">
@@ -142,7 +151,6 @@
               <th>Dataset Free</th>
               <th>ChatGPT Free</th>
               <th>Flexibility Rank</th>
-              
             </tr>
           </thead>
           <tbody></tbody>
@@ -241,22 +249,22 @@
       return null;
     }
 
-    // Updated getPIR: supports either a direct PIR input OR calculation from SEM/BM.
-    // Also supports two valid input cases: (a) multiple SEM with a single BM (broadcast) or (b) paired SEM and BM.
-    function getPIR(type, SEM = null, BM = null, pir = null) {
+    // Updated getPIR: supports either a direct PIR input OR calculation from SEM/BLM.
+    // Also supports two valid input cases: (a) multiple SEM with a single BLM (broadcast) or (b) paired SEM and BLM.
+    function getPIR(type, SEM = null, BLM = null, pir = null) {
       let PIR;
       if (pir !== null) {
         // Direct PIR input provided.
         PIR = pir;
-      } else if (SEM !== null && BM !== null) {
-        if (BM.length === 1 && SEM.length >= 1) {
-          let pirArray = SEM.map(sem => sem / BM[0]);
+      } else if (SEM !== null && BLM !== null) {
+        if (BLM.length === 1 && SEM.length >= 1) {
+          let pirArray = SEM.map(sem => sem / BLM[0]);
           pir = pirArray.reduce((acc, val) => acc + val, 0) / pirArray.length;
-        } else if (SEM.length === BM.length) {
-          let pirArray = SEM.map((sem, i) => sem / BM[i]);
+        } else if (SEM.length === BLM.length) {
+          let pirArray = SEM.map((sem, i) => sem / BLM[i]);
           pir = pirArray.reduce((acc, val) => acc + val, 0) / pirArray.length;
         } else {
-          return { error: "Invalid input: Provide either one BM value with one or more SEM values, or equal-length arrays of SEM and BM values." };
+          return { error: "Invalid input: Provide either one BLM value with one or more SEM values, or equal-length arrays of SEM and BLM values." };
         }
         if (type === "same_win_rate") {
           PIR = pir;
@@ -272,11 +280,11 @@
     // --- Dynamic Input State Updates for Efficiency Section ---
     function updateEfficiencyInputStates() {
       const semInput = document.getElementById("SEM");
-      const bmInput = document.getElementById("BM");
+      const BLMInput = document.getElementById("BLM");
       const pirInput = document.getElementById("PIR");
 
-      // If SEM or BM have input, disable PIR.
-      if (semInput.value.trim() !== "" || bmInput.value.trim() !== "") {
+      // If SEM or BLM have input, disable PIR.
+      if (semInput.value.trim() !== "" || BLMInput.value.trim() !== "") {
         pirInput.disabled = true;
         pirInput.classList.add("disabled");
       } else {
@@ -284,23 +292,23 @@
         pirInput.classList.remove("disabled");
       }
 
-      // If PIR has input, disable SEM and BM.
+      // If PIR has input, disable SEM and BLM.
       if (pirInput.value.trim() !== "") {
         semInput.disabled = true;
-        bmInput.disabled = true;
+        BLMInput.disabled = true;
         semInput.classList.add("disabled");
-        bmInput.classList.add("disabled");
+        BLMInput.classList.add("disabled");
       } else {
         semInput.disabled = false;
-        bmInput.disabled = false;
+        BLMInput.disabled = false;
         semInput.classList.remove("disabled");
-        bmInput.classList.remove("disabled");
+        BLMInput.classList.remove("disabled");
       }
     }
 
     // Add event listeners to update input states dynamically.
     document.getElementById("SEM").addEventListener("input", updateEfficiencyInputStates);
-    document.getElementById("BM").addEventListener("input", updateEfficiencyInputStates);
+    document.getElementById("BLM").addEventListener("input", updateEfficiencyInputStates);
     document.getElementById("PIR").addEventListener("input", updateEfficiencyInputStates);
 
     // --- NEW: Function to compute signed efficiency values and sort the efficiencyData array ---
@@ -395,7 +403,7 @@
       const effTbody = document.querySelector("#efficiencyTable tbody");
       // Do not clear table if error occurs.
       const SEMInput = document.getElementById("SEM").value.trim();
-      const BMInput = document.getElementById("BM").value.trim();
+      const BLMInput = document.getElementById("BLM").value.trim();
       const SDFInput = document.getElementById("SDF").value.trim();
       const PIRInputVal = document.getElementById("PIR").value.trim();
 
@@ -415,28 +423,28 @@
 
       // If new efficiency input is provided, update the global efficiencyData array.
       if (SDFInput !== "") {
-        if (SEMInput !== "" || BMInput !== "" || PIRInputVal !== "") {
+        if (SEMInput !== "" || BLMInput !== "" || PIRInputVal !== "") {
           const methodNamesInput = document.getElementById("effMethodNames").value.trim();
           const methods = methodNamesInput ? methodNamesInput.split(",").map(s => s.trim()) : [];
           const pirType = document.getElementById("pirType").value;
           const SEM = SEMInput ? SEMInput.split(",").map(Number) : [];
-          const BM = BMInput ? BMInput.split(",").map(Number) : [];
+          const BLM = BLMInput ? BLMInput.split(",").map(Number) : [];
           const SDF = SDFInput.split(",").map(Number);
 
-          if (PIRInputVal === "" && ((SEM.length > 0 || BM.length > 0) && (SEM.length !== BM.length && BM.length !== 1))) {
-            document.getElementById("semError").textContent = "SEM and BM must have the same number of values or BM must be a single value.";
-            document.getElementById("bmError").textContent = "SEM and BM must have the same number of values or BM must be a single value.";
+          if (PIRInputVal === "" && ((SEM.length > 0 || BLM.length > 0) && (SEM.length !== BLM.length && BLM.length !== 1))) {
+            document.getElementById("semError").textContent = "SEM and BLM must have the same number of values or BLM must be a single value.";
+            document.getElementById("BLMError").textContent = "SEM and BLM must have the same number of values or BLM must be a single value.";
             return;
           } else {
             document.getElementById("semError").textContent = "";
-            document.getElementById("bmError").textContent = "";
+            document.getElementById("BLMError").textContent = "";
           }
 
           let pirValue;
           if (PIRInputVal !== "") {
             pirValue = parseFloat(PIRInputVal);
           } else {
-            const result = getPIR(pirType, SEM, BM, null);
+            const result = getPIR(pirType, SEM, BLM, null);
             if (result.error) {
               alert(result.error);
               return;
@@ -458,7 +466,7 @@
           // Clear the input fields after adding.
           document.getElementById("effMethodNames").value = "";
           document.getElementById("SEM").value = "";
-          document.getElementById("BM").value = "";
+          document.getElementById("BLM").value = "";
           document.getElementById("SDF").value = "";
           document.getElementById("PIR").value = "";
           updateEfficiencyInputStates();
@@ -1167,5 +1175,13 @@
       downloadCanvas("feasibilityCanvas", "feasibility_plot.png");
     }
   </script>
+
+  <!-- Add this right before the closing </body> tag in index.html -->
+  <footer style="margin-top: 2rem; padding: 1rem; text-align: center; color: #666; border-top: 1px solid #eee; font-size: 0.9rem;">
+    <p>
+      Acknowledgements: Special thanks to Rui Ke for providing the core PIR calculator code. 
+      We also appreciate the valuable suggestions and advice from the research community.
+    </p>
+  </footer>
 </body>
 </html>
