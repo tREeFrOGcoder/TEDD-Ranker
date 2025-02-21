@@ -1,7 +1,7 @@
 # Take the Essence and Discard the Dross (TEDD-Ranker): A Rethinking on Data Selection for Fine-Tuning Large Language Models
 
 ## ✨ Latest News
-- [02/08/2025]: 🎉🎉🎉 Our paper has been accepted at **NAACL 2025**! The full paper is available [here](https://arxiv.org/abs/XXXX.XXXXX).
+- [02/08/2025]: 🎉🎉🎉 Our paper has been accepted at **NAACL 2025**! The full paper is available [here](https://arxiv.org/pdf/2406.14115).
 - [02/10/2025]: Our latest **TEDD-Ranker** implementation and dataset releases are now available! Check them out at [TEDD-Ranker Website](https://zicheliu.com/TEDD-Ranker/).
 - [02/12/2025]: Addressed minor errors in the **feasibility ranking plot** and **feasibility rank table** (Appendix Figure 5). The latest rankings are correctly reflected on our website and in the newest **ArXiv version**.
 
