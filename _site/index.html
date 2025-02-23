@@ -233,20 +233,36 @@
     //   { method: "CaR", sdf: 0.0196, pir: 1.343 },
     //   { method: "SelectIT", sdf: 0.2, pir: 1.653 }
     // ];
+    // let efficiencyData = [
+    //   { method: "AlpaGasus", sdf: 0.173, pir: 1.284 },
+    //   { method: "Superfiltering", sdf: 0.05, pir: 1.425 },
+    //   { method: "InsTag", sdf: 0.02, pir: 1.291 },
+    //   { method: "DEITA", sdf: 0.1, pir: 1.426 },
+    //   { method: "InstructionGPT-4", sdf: 0.058, pir: 1.385 },
+    //   { method: "Nuggets", sdf: 0.145, pir: 1.374 },
+    //   { method: "IFD", sdf: 0.05, pir: 1.697 },
+    //   { method: "LESS", sdf: 0.05, pir: 1.4 },
+    //   { method: "Instruction-Mining", sdf: 0.025, pir: 1.375 },
+    //   { method: "SHED", sdf: 0.09, pir: 1.468 },
+    //   { method: "CaR", sdf: 0.0196, pir: 1.343 },
+    //   { method: "SelectIT", sdf: 0.2, pir: 1.653 }
+    // ];
     let efficiencyData = [
       { method: "AlpaGasus", sdf: 0.173, pir: 1.284 },
-      { method: "Superfiltering", sdf: 0.05, pir: 1.425 },
-      { method: "InsTag", sdf: 0.02, pir: 1.291 },
+      { method: "Superfiltering", sdf: 0.05, pir: 1.475 },
+      { method: "InsTag", sdf: 0.02, pir: 1.344 },
       { method: "DEITA", sdf: 0.1, pir: 1.426 },
-      { method: "InstructionGPT-4", sdf: 0.0058, pir: 1.385 },
-      { method: "Nuggets", sdf: 0.145, pir: 1.374 },
-      { method: "IFD", sdf: 0.05, pir: 1.697 },
-      { method: "LESS", sdf: 0.05, pir: 1.4 },
-      { method: "Instruction-Mining", sdf: 0.025, pir: 1.375 },
-      { method: "SHED", sdf: 0.09, pir: 1.468 },
+      { method: "InstructionGPT-4", sdf: 0.058, pir: 1.443 },
+      { method: "Nuggets", sdf: 0.145, pir: 1.519 },
+      { method: "IFD", sdf: 0.05, pir: 1.747 },
+      { method: "LESS", sdf: 0.05, pir: 1.491 },
+      { method: "Instruction-Mining", sdf: 0.025, pir: 1.400 },
+      { method: "SHED", sdf: 0.09, pir: 1.460 },
       { method: "CaR", sdf: 0.0196, pir: 1.343 },
       { method: "SelectIT", sdf: 0.2, pir: 1.653 }
     ];
+
+
     // --- NEW: assign a global order to each work for tie-breaking ---
     let nextEfficiencyOrder = 1;
     efficiencyData.forEach(d => { d.order = nextEfficiencyOrder++; });
