@@ -151,6 +151,8 @@
               <th>Dataset Free</th>
               <th>ChatGPT Free</th>
               <th>Flexibility Rank</th>
+              <!-- NEW: Add Actions column -->
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -186,6 +188,8 @@
                     </select>
                 </td>
                 <td>Auto</td> <!-- Flexibility Rank -->
+                <!-- NEW: Empty cell for potential new action -->
+                <td></td>
             </tr>
         </tfoot>
         </table>
@@ -744,13 +748,14 @@
         });
     }
 
+    // Modified populateFeasibilityTable to insert a delete button in the last column.
     function populateFeasibilityTable() {
       computeFeasibilityRanks();
       sortFeasibilityData();
 
       const feasTbody = document.querySelector("#feasibilityTable tbody");
       feasTbody.innerHTML = "";
-      feasibilityData.forEach(d => {
+      feasibilityData.forEach((d, index) => {
         const repVal = d.rep ? "&#10004;" : "&#10007;";
         const mfVal  = d.modelFree ? "&#10004;" : "&#10007;";
         const dfVal  = d.datasetFree ? "&#10004;" : "&#10007;";
@@ -765,10 +770,24 @@
                         <td>${mfVal}</td>
                         <td>${dfVal}</td>
                         <td>${cfVal}</td>
-                        <td>${d.flexibilityRank}</td>`;
+                        <td>${d.flexibilityRank}</td>
+                        <td><button class="deleteFeasBtn" data-index="${index}">Delete</button></td>`;
         feasTbody.appendChild(tr);
       });
+
+      // Attach event listeners to the delete buttons in feasibility table.
+      document.querySelectorAll(".deleteFeasBtn").forEach(btn => {
+        btn.addEventListener("click", function() {
+          const indexToDelete = parseInt(this.getAttribute("data-index"));
+          // Remove the element from feasibilityData array:
+          feasibilityData.splice(indexToDelete, 1);
+          // Refresh table and plot after deletion.
+          populateFeasibilityTable();
+          drawFeasibilityPlot();
+        });
+      });
     }
+
     // Adds a new feasibility row based on tfoot inputs.
     function addNewFeasibilityRow() {
       const fm = document.getElementById("newFeasMethod").value.trim();
