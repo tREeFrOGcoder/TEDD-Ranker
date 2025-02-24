@@ -1,11 +1,28 @@
-# Take the Essence and Discard the Dross (TEDD-Ranker): A Rethinking on Data Selection for Fine-Tuning Large Language Models
+# Take the Essence and Discard the Dross: A Rethinking on Data Selection for Fine-Tuning Large Language Models
 
 ## ✨ Latest News
+- [02/23/2025]: 🔨 Latest website and ranking algorithms addressed some minor errors in the **feasibility ranking plot** (Figure 5) and **feasibility rank table** (Appendix Table 5). Check out the updated Arxiv version [here](https://arxiv.org/pdf/2406.14115).
 - [02/08/2025]: 🎉🎉🎉 Our paper has been accepted at **NAACL 2025**! The full paper is available [here](https://arxiv.org/pdf/2406.14115).
-- [02/10/2025]: Our latest **TEDD-Ranker** implementation and dataset releases are now available! Check them out at [TEDD-Ranker Website](https://zicheliu.com/TEDD-Ranker/).
-- [02/12/2025]: Addressed minor errors in the **feasibility ranking plot** and **feasibility rank table** (Appendix Figure 5). The latest rankings are correctly reflected on our website and in the newest **ArXiv version**.
+- [01/26/2025]: 👋 Our **TEDD-Ranker** visualization is now available! Check it out at [TEDD-Ranker](https://zicheliu.com/TEDD-Ranker/) with your own data selection methods!
+
 
 ## ⚡ Introduction
+Quality matters more than quantity! Data selection for fine-tuning large language models has been a hit topic with various methods proposed over the last few years. For anyone intersted in the field or wish to develop new methods, some natural questions would be: **What are the existing methods** and **How good are they**?
+
+Our work takes a retrospective look at a dozen key data selection techniques for fine-tuning LLMs, and introduces the following:
+
+- A novel **three-stage scheme**, comprising **feature extraction**, **criteria design**, and **selector evaluation**, which systematically categorizes and evaluates these methods.
+![ThreeStageScheme](assets/20250205ThreeStageScheme.png)
+- a **unified comparison approach** that incorporates ratio-based efficiency and ranking-based feasibility metrics to address inconsistencies across evaluation settings.
+![ComparisonFlow](assets/20250207ComparisonMethod.png)
+
+These allow us to obtain a quantitative **Efficiency Rank Plot**, and a qualitative **Feasibility Rank Plot**.
+![TwoGraphs](assets/20250223combined.png)
+
+
+---
+
+However, there lacks a unified
 Fine-tuning Large Language Models (LLMs) benefits significantly from selecting high-quality data rather than merely increasing dataset size. Our work introduces:
 
 - A **three-stage framework** for data selection: **feature extraction, criteria design, and selector evaluation**.
