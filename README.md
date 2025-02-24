@@ -7,7 +7,9 @@
 
 
 ## ⚡ Introduction
-Quality matters more than quantity! Data selection for fine-tuning large language models has been a hit topic with various methods proposed over the last few years. For anyone intersted in the field or wish to develop new methods, some natural questions would be: **What are the existing methods** and **How good are they**?
+> 𝑸𝒖𝒂𝒍𝒊𝒕𝒚 𝒎𝒂𝒕𝒕𝒆𝒓𝒔 𝒎𝒐𝒓𝒆 𝒕𝒉𝒂𝒏 𝒒𝒖𝒂𝒏𝒕𝒊𝒕𝒚! 
+
+Data selection for fine-tuning large language models has been a hit topic with various methods proposed over the last few years. For anyone intersted in the field or wish to develop new methods, some natural questions would be: **What are the existing methods** and **How good are they**?
 
 Our work takes a retrospective look at a dozen key data selection techniques for fine-tuning LLMs, and introduces the following:
 
@@ -16,36 +18,22 @@ Our work takes a retrospective look at a dozen key data selection techniques for
 - a **unified comparison approach** that incorporates ratio-based efficiency and ranking-based feasibility metrics to address inconsistencies across evaluation settings.
 ![ComparisonFlow](assets/20250207ComparisonMethod.png)
 
-These allow us to obtain a quantitative **Efficiency Rank Plot**, and a qualitative **Feasibility Rank Plot**.
+
+## 💭 Results and Discussions
+**TL;DR**: 
+> 𝑴𝒆𝒕𝒉𝒐𝒅𝒔 𝒆𝒎𝒑𝒉𝒂𝒔𝒊𝒛𝒊𝒏𝒈 𝒎𝒐𝒓𝒆 𝒕𝒂𝒓𝒈𝒆𝒕𝒆𝒅 𝒒𝒖𝒂𝒍𝒊𝒕𝒚 𝒎𝒆𝒂𝒔𝒖𝒓𝒆𝒎𝒆𝒏𝒕 𝒂𝒄𝒉𝒊𝒆𝒗𝒆 𝒉𝒊𝒈𝒉𝒆𝒓 𝒆𝒇𝒇𝒊𝒄𝒊𝒆𝒏𝒄𝒚 𝒃𝒖𝒕 𝒂𝒕 𝒕𝒉𝒆 𝒄𝒐𝒔𝒕 𝒐𝒇 𝒇𝒆𝒂𝒔𝒊𝒃𝒊𝒍𝒊𝒕𝒚.
+> \-- 𝒕𝒉𝒆 𝒂𝒖𝒕𝒉𝒐𝒓𝒔
+
+The frameworks introduced above allow us to obtain a quantitative **Efficiency Rank Plot**, and a qualitative **Feasibility Rank Plot**.
 ![TwoGraphs](assets/20250223combined.png)
 
+Integrating the detailed method analysis and these ranking results, we discuss the main trends from the perspective of **Candidate Dataset**, **Quality Measurement** and **Selected Features**; as well as a look into the future challenges and directions.
+![Trend](assets/20250208Trend_tall_new.png)
 
----
-
-However, there lacks a unified
-Fine-tuning Large Language Models (LLMs) benefits significantly from selecting high-quality data rather than merely increasing dataset size. Our work introduces:
-
-- A **three-stage framework** for data selection: **feature extraction, criteria design, and selector evaluation**.
-- A **unified comparison approach** to measure data selection methods using **efficiency (Performance Improvement Ratio - PIR)** and **feasibility (flexibility and simplicity ranks)**.
-- A ranking-based **TEDD-Ranker** that evaluates methods based on their efficiency-feasibility tradeoff.
-
-Our key findings indicate that **targeted quality measurement leads to higher efficiency at the cost of feasibility**. Our **unified ranking approach provides a standardized comparison** across existing data selection methods.
-
-<div align=center>
-<img src="assets/tedd_pipeline.png" width = "640" alt="TEDD-Ranker Pipeline" align=center/>
-</div>
-
-## 💡 Key Insights
-
-1. **Efficiency vs. Feasibility Tradeoff**: The best-performing selection methods optimize **PIR**, but at the expense of general applicability.
-2. **Three-Stage Framework**:
-   - **Feature Extraction**: Extracts linguistic and model-oriented features.
-   - **Criteria Design**: Defines internal and external quality labels.
-   - **Selector Evaluation**: Assesses models via counterpart evaluations and win-tie-loss metrics.
-3. **Unified Ranking System**: Provides **comparable rankings** based on a mix of **efficiency and feasibility indicators**.
 
 ## 🔗 TEDD-Ranker: Code & Visualization
-We provide an **interactive visualization** of our method rankings and selection efficiency comparisons at:
+We provide an **interactive visualization** of how we compute and visualize the efficiency and feasibility of data selection methods for easy comparison.
+our method rankings and selection efficiency comparisons at:
 🔗 [TEDD-Ranker Visualization](https://zicheliu.com/TEDD-Ranker/)
 
 - **Efficiency Rank**: Performance Improvement Ratio (PIR) vs. Selected Dataset Fraction (SDF).
