@@ -32,8 +32,7 @@ Integrating the detailed method analysis and these ranking results, we discuss t
 
 
 ## 🔗 TEDD-Ranker: Code & Visualization
-We provide an **interactive visualization** of how we compute and visualize the efficiency and feasibility of data selection methods for easy comparison.
-our method rankings and selection efficiency comparisons at:
+We provide an **interactive visualization** of how we compute and visualize the efficiency and feasibility of data selection methods for easy comparison at:
 🔗 [TEDD-Ranker Visualization](https://zicheliu.com/TEDD-Ranker/)
 
 - **Efficiency Rank**: Performance Improvement Ratio (PIR) vs. Selected Dataset Fraction (SDF).
@@ -41,25 +40,15 @@ our method rankings and selection efficiency comparisons at:
 
 *Note: The feasibility ranking table and feasibility rank plot contained minor errors in the original version. These are now corrected in the latest ArXiv update and TEDD-Ranker website.*
 
-## 📈 Key Results
-
-
-<div align=center>
-<img src="assets/efficiency_feasibility_ranking.png" width = "640" alt="Efficiency vs. Feasibility" align=center/>
-</div>
-
-
 
 ## 🧐 Limitations
-
-- **Error Corrections**: Our feasibility ranking plot (Appendix Figure 5) had **minor ranking errors** in early versions. The website and **latest ArXiv version** are now correct.
+- **Error Corrections**: Our feasibility ranking plot (Appendix Figure 5) had **minor ranking errors** in early versions. The website and **latest ArXiv version** are now correct [02/23/2025].
 - **Ongoing Updates**: TEDD-Ranker is evolving. We welcome feedback and **will update rankings with new datasets/methods**.
-- **Contact for Fixes**: If you spot any inconsistencies, **email archerliu@berkeley.edu or treefrogorigami@gmail.com**. Confirmed errors will be corrected and updated.
+- **Contact for Fixes**: If you spot any inconsistencies, feel free to **email archerliu@berkeley.edu or treefrogorigami@gmail.com**. Confirmed errors will be corrected and updated.
 
 ## 🤝 Acknowledgements
-This research is supported by:
-- The School of Data Science, **The Chinese University of Hong Kong, Shenzhen**.
-- **Shenzhen Research Institute of Big Data**.
+We are grateful for all the researchers who have been studying data selection methods and striving to make better and better algorithms!
+
 
 ## 📜 Citation
 ```bibtex
